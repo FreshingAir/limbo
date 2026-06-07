@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">LimboExample</string>
+    <string name="start">启动</string>
+    <string name="extra_args">附加参数：</string>
+</resources>
