@@ -80,7 +80,8 @@ jobs:
           mv SDL2-2.0.8 SDL2
       - name: Apply patches
         run: |
-          cd qemu
+          ### Apply patch for QEMU:
+          cd ./limbo-android-lib/src/main/jni/qemu
           echo "🔧 应用 QEMU 补丁..."
           patch -p1 -N --forward < ../patches/qemu-5.1.0.patch || true
 
