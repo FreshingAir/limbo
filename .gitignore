@@ -55,7 +55,6 @@ libs/
 /extra/
 /sh.exe.stackdump
 roms
-gradle
 obj/
 jniLibs/
 QEMU_VERSION
