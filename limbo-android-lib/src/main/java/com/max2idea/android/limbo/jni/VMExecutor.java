@@ -108,7 +108,8 @@ public class VMExecutor {
     public static String start(String[] params) {
         if (params == null || params.length == 0) {
             Log.e(TAG, "start: params is null or empty");
-            return null;
+        } else {
+            printParams(params);
         }
 
         String res = null;
@@ -135,7 +136,7 @@ public class VMExecutor {
         return res;
     }
 
-    public void printParams(@NonNull String[] params) {
+    public static void printParams(@NonNull String[] params) {
         Log.d(TAG, "Params:");
         for (int i = 0; i < params.length; i++) {
             Log.d(TAG, i + ": " + params[i]);

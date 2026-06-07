@@ -41,4 +41,8 @@ dependencies {
     androidTestImplementation libs.androidx.espresso.core
     androidTestImplementation libs.androidx.junit
     implementation project(':limbo-android-lib')
+    // 设备兼容框架：https://github.com/getActivity/DeviceCompat
+    implementation libs.devicecompat
+    // 权限请求框架：https://github.com/getActivity/XXPermissions
+    implementation libs.xxpermissions
 }
