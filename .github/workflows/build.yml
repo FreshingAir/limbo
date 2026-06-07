@@ -1,0 +1,126 @@
+name: build
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build_linux:
+    name: Linux Build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v6
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: 17
+      - name: Setup Android SDK Tools
+        uses: android-actions/setup-android@v3.2.1
+        with:
+          packages: 'ndk;23.1.7779620 build-tools;36.1 platforms;android-36'
+
+      - name: 安装依赖
+        run: |
+          sudo apt-get install make autoconf automake git binutils python3 \
+            libtool-bin pkg-config flex bison gettext texinfo rsync \
+            gtk-doc-tools
+      # ================= 缓存 1：Make =================
+      - name: 缓存依赖库
+        uses: actions/cache@v4
+        id: dep-cache
+        with:
+          path: |
+            ./limbo-android-lib/src/main/jni/qemu
+            ./limbo-android-lib/src/main/jni/glib
+            ./limbo-android-lib/src/main/jni/libffi
+            ./limbo-android-lib/src/main/jni/pixman
+            ./limbo-android-lib/src/main/jni/SDL2
+          key: ${{ runner.os }}-limbo-deps-${{ hashFiles('**/jni/**') }}
+          restore-keys: |
+            ${{ runner.os }}-limbo-deps-
+      - name: 克隆代码
+        run: |
+          #Make sure you're under the jni directory
+          cd ./limbo-android-lib/src/main/jni
+          
+          if [ -d "qemu" ] && [ -d "glib" ] && [ -d "libffi" ] && [ -d "pixman" ] && [ -d "SDL2" ]; then
+            echo "✅ 依赖库已从缓存恢复，跳过下载"
+            exit 0
+          fi
+          
+          # Now download the source code for the external libraries and unzip them under the jni directory
+          #Note: if some of these file links don't download with wget use your browser to download them
+          
+          ##### Get QEMU
+          git clone --branch v5.1.0 --depth 1 https:///github.com/qemu/qemu.git /tmp/qemu
+          mv /tmp/qemu qemu
+          
+          ##### GET glib
+          wget --quiet https://ftp.gnome.org/pub/GNOME/sources/glib/2.56/glib-2.56.1.tar.xz -P /tmp/
+          tar -xJf /tmp/glib-2.56.1.tar.xz
+          mv glib-2.56.1 glib
+          
+          ##### GET libffi
+          wget --quiet https://sourceware.org/pub/libffi/libffi-3.3.tar.gz -P /tmp/
+          tar -xzf /tmp/libffi-3.3.tar.gz
+          mv libffi-3.3 libffi
+          
+          ##### GET pixman
+          wget --quiet https://www.cairographics.org/releases/pixman-0.40.0.tar.gz -P /tmp/
+          tar -xzf /tmp/pixman-0.40.0.tar.gz
+          mv pixman-0.40.0 pixman
+          
+          ##### GET SDL2
+          wget --quiet https://www.libsdl.org/release/SDL2-2.0.8.tar.gz -P /tmp/
+          tar -xzf /tmp/SDL2-2.0.8.tar.gz
+          mv SDL2-2.0.8 SDL2
+      - name: Apply patches
+        run: |
+          ### Apply patch for QEMU:
+          cd ./limbo-android-lib/src/main/jni/qemu
+          patch -p1 < ../patches/qemu-5.1.0.patch
+          
+          ### Apply glib patch for Limbo:
+          cd ../glib/
+          patch -p1 < ../patches/glib-2.56.1.patch
+          
+          ### Apply SDL2 patch for Limbo:
+          cd ../SDL2/
+          patch -p1 < ../patches/sdl2-2.0.8.patch
+      - name: Build QEMU
+        run: |
+          cd limbo-android-lib/src/main/jni
+          export NDK_ROOT=${ANDROID_SDK_ROOT}/ndk/23.1.7779620
+          export PATH=$PATH:$NDK_ROOT
+          export BUILD_HOST=arm64-v8a
+          export BUILD_GUEST=x86_64-softmmu,aarch64-softmmu
+          make limbo
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          gradle-version: '7.2'
+      # ================= 缓存 2：Gradle =================
+      - name: Cache gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+          restore-keys: ${{ runner.os }}-gradle-
+      - name: Build with Gradle
+        run: gradle assemble
+      - name: 上传apk构建产物
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: build_apk_output.zip
+          path: limbo-android-example/build/outputs/apk/*.apk
+      - name: Upload a Build Artifact
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: build_aar_output.zip
+          path: limbo-android-lib/build/outputs/aar/*.aar
