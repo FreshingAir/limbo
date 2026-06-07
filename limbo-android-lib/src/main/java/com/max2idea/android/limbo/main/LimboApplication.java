@@ -55,6 +55,7 @@ public class LimboApplication extends Application {
     public void onCreate() {
         super.onCreate();
         // 初始化应用上下文
+        arch = Config.Arch.x86_64;
         sAppContext = getApplicationContext();
         // 自动初始化
         initialize();

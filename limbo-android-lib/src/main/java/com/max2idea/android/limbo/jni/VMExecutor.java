@@ -41,7 +41,10 @@ public class VMExecutor {
     private static int vm_width;
     private static int vm_height;
 
-    // JNI Methods（全部修复为 static，匹配上层调用）
+    // ==================== 新增：适配原生代码的 JNI 方法 ====================
+    public static native void nativeSetBinderObject(Object obj);
+
+    // JNI Methods
     public static native String start(String storage_dir, String base_dir,
                                       String lib_filename, String lib_path,
                                       int sdl_scale_hint, Object[] params);
@@ -110,6 +113,9 @@ public class VMExecutor {
 
         String res = null;
         try {
+            // ==================== 关键：初始化绑定原生对象（修复崩溃） ====================
+            nativeSetBinderObject(new VMExecutor());
+
             QmpClient.setExternal(LimboSettingsManager.getEnableExternalQMP(LimboApplication.getInstance()));
             String libFilename = getQemuLibrary();
             String libPath = FileUtils.getNativeLibDir(LimboApplication.getInstance()) + "/" + libFilename;

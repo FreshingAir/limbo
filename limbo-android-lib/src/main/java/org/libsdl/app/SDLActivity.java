@@ -116,7 +116,7 @@ public class SDLActivity
                 // "SDL2_mixer",
                 // "SDL2_net",
                 // "SDL2_ttf",
-                "main"
+                // "main"
         };
     }
 
