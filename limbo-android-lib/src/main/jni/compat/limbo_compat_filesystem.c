@@ -6,6 +6,7 @@
 #include <string.h>
 #include <errno.h>
 #include <android/log.h>
+#include <stdlib.h> // for mkstemp
 
 #include "limbo_compat_filesystem.h"
 
@@ -33,7 +34,7 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved) {
 
 // 从 Java 传入对象
 JNIEXPORT void JNICALL
-Java_com_example_limbo_VMExecutor_nativeSetBinderObject(JNIEnv *env, jclass clazz, jobject obj) {
+Java_com_max2idea_android_limbo_jni_VMExecutor_nativeSetBinderObject(JNIEnv *env, jclass clazz, jobject obj) {
     if (g_obj != NULL) {
         (*env)->DeleteGlobalRef(env, g_obj);
     }
@@ -114,6 +115,11 @@ int android_close(int fd) {
         LOGE("close fd %d error: %s", fd, strerror(errno));
     }
     return res;
+}
+
+// ==================== 修复 QEMU 链接错误：android_mkstemp 实现 ====================
+int android_mkstemp(char *template) {
+    return mkstemp(template);
 }
 
 FILE *android_fopen(const char *path, const char *mode) {

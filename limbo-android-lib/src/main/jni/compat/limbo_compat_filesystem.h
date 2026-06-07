@@ -15,6 +15,7 @@ int android_open(const char *pathname, int flags, mode_t mode);
 int android_close(int fd);
 int android_stat(const char *pathname, struct stat *statbuf);
 int android_unlink(const char *pathname);
+int android_mkstemp(char *template); // <-- 新增声明
 
 #ifdef __cplusplus
 }
