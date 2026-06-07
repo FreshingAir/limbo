@@ -70,14 +70,9 @@ public class Installer extends AsyncTask<Void, Void, Void> {
 
     @Override
     protected Void doInBackground(Void... arg0) {
-        activity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                progDialog = ProgressDialog.show(activity, activity.getString(R.string.PleaseWait),
-                        activity.getString(R.string.InstallingBIOS),
-                        true);
-            }
-        });
+        activity.runOnUiThread(() -> progDialog = ProgressDialog.show(activity, activity.getString(R.string.PleaseWait),
+                activity.getString(R.string.InstallingBIOS),
+                true));
         FileInstaller.installFiles(activity, force);
         return null;
     }

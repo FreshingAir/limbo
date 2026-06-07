@@ -32,7 +32,6 @@ import com.max2idea.android.limbo.qmp.QmpClient;
 
 import org.json.JSONObject;
 
-
 /**
  * Class is used to start and stop the qemu process and communicate file descriptions, mouse,
  * and keyboard events.
@@ -42,63 +41,90 @@ public class VMExecutor {
     private static int vm_width;
     private static int vm_height;
 
-    //JNI Methods
+    // JNI Methods（全部修复为 static，匹配上层调用）
     public static native String start(String storage_dir, String base_dir,
                                       String lib_filename, String lib_path,
                                       int sdl_scale_hint, Object[] params);
 
-    private native String stop(int restart);
+    public static native String stop(int restart);
 
-    public native void setSDLRefreshRateDefault(int value);
+    public static native void setSDLRefreshRateDefault(int value);
 
-    public native void setSDLRefreshRateIdle(int value);
+    public static native void setSDLRefreshRateIdle(int value);
 
-    public native int getSDLRefreshRateDefault();
+    public static native int getSDLRefreshRateDefault();
 
-    public native int getSDLRefreshRateIdle();
+    public static native int getSDLRefreshRateIdle();
 
-    public native void nativeIgnoreBreakpointInvalidate(int value);
+    public static native void nativeIgnoreBreakpointInvalidate(int value);
 
-    public native void nativeMouseEvent(int button, int action, int relative, int x, int y);
+    public static native void nativeMouseEvent(int button, int action, int relative, int x, int y);
 
-    public native void nativeMouseBounds(int xmin, int xmax, int ymin, int ymax);
+    public static native void nativeMouseBounds(int xmin, int xmax, int ymin, int ymax);
 
-    public native void nativeFullscreen();
+    public static native void nativeFullscreen();
 
-    public native void nativeRefreshScreen(int value);
+    public static native void nativeRefreshScreen(int value);
 
-    public native void nativeEnableAaudio(int value, String aaudioLibName, String aaudioLibPath);
+    public static native void nativeEnableAaudio(int value, String aaudioLibName, String aaudioLibPath);
 
     protected String changedev(String dev, String value) {
-        String response = QmpClient.sendCommand(QmpClient.getChangeDeviceCommand(dev, value));
-        String displayDevValue = FileUtils.getFullPathFromDocumentFilePath(value);
-        if (Config.debug)
-            Log.i(TAG, LimboApplication.getInstance().getString(R.string.ChangedDevice) + ": " + dev + ": " + displayDevValue);
-        return response;
+        try {
+            String response = QmpClient.sendCommand(QmpClient.getChangeDeviceCommand(dev, value));
+            String displayDevValue = FileUtils.getFullPathFromDocumentFilePath(value);
+            if (Config.debug) {
+                Log.i(TAG, LimboApplication.getInstance().getString(R.string.ChangedDevice) + ": " + dev + ": " + displayDevValue);
+            }
+            return response;
+        } catch (Exception e) {
+            Log.e(TAG, "changedev failed: " + e.getMessage());
+            return null;
+        }
     }
+
     protected String ejectdev(String dev) {
-        String response = QmpClient.sendCommand(QmpClient.getEjectDeviceCommand(dev));
-        if (Config.debug)
-            Log.i(TAG, LimboApplication.getInstance().getString(R.string.EjectedDevice) + ": " + dev);
-        return response;
+        try {
+            String response = QmpClient.sendCommand(QmpClient.getEjectDeviceCommand(dev));
+            if (Config.debug) {
+                Log.i(TAG, LimboApplication.getInstance().getString(R.string.EjectedDevice) + ": " + dev);
+            }
+            return response;
+        } catch (Exception e) {
+            Log.e(TAG, "ejectdev failed: " + e.getMessage());
+            return null;
+        }
     }
+
     /**
      * Starts the native process. This should be called from a background thread from a
      * foreground service in order to prevent the process from being killed
      *
      * @return String from the native code vm-executor-jni.cpp
      */
+    @Nullable
     public static String start(String[] params) {
+        if (params == null || params.length == 0) {
+            Log.e(TAG, "start: params is null or empty");
+            return null;
+        }
+
         String res = null;
         try {
             QmpClient.setExternal(LimboSettingsManager.getEnableExternalQMP(LimboApplication.getInstance()));
             String libFilename = getQemuLibrary();
-            res = start(Config.storagedir, LimboApplication.getBasefileDir(),
-                    libFilename, FileUtils.getNativeLibDir(LimboApplication.getInstance()) + "/" + libFilename,
-                    Config.SDLHintScale, params);
+            String libPath = FileUtils.getNativeLibDir(LimboApplication.getInstance()) + "/" + libFilename;
+
+            Log.i(TAG, "Loading QEMU library: " + libPath);
+
+            res = start(Config.storagedir,
+                    LimboApplication.getBasefileDir(),
+                    libFilename,
+                    libPath,
+                    Config.SDLHintScale,
+                    params);
+
         } catch (Exception ex) {
-            Log.e(TAG, ex.getMessage());
-            return res;
+            Log.e(TAG, "VM start failed: " + ex.getMessage(), ex);
         }
         return res;
     }
@@ -109,8 +135,13 @@ public class VMExecutor {
             Log.d(TAG, i + ": " + params[i]);
         }
     }
+
     @NonNull
     private static String getQemuLibrary() {
+        if (LimboApplication.arch == null) {
+            throw new IllegalStateException("LimboApplication.arch is not initialized");
+        }
+
         switch (LimboApplication.arch) {
             case x86:
                 return "libqemu-system-i386.so";
@@ -121,120 +152,102 @@ public class VMExecutor {
             case arm64:
                 return "libqemu-system-aarch64.so";
             default:
-                throw new IllegalStateException("Unexpected value: " + LimboApplication.arch);
+                throw new IllegalStateException("Unsupported architecture: " + LimboApplication.arch);
         }
     }
+
     public void stopvm(final int restart) {
         new Thread(() -> {
-            if (restart != 0) {
-                QmpClient.sendCommand(QmpClient.getResetCommand());
-            } else {
-                //XXX: Qmp command only halts the VM but doesn't exit so we use force close
-//            QmpClient.sendCommand(QmpClient.powerDown());
-                stop(restart);
+            try {
+                if (restart != 0) {
+                    Log.i(TAG, "Restarting VM via QMP reset");
+                    QmpClient.sendCommand(QmpClient.getResetCommand());
+                } else {
+                    Log.i(TAG, "Stopping VM native process");
+                    stop(restart);
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "stopvm failed: " + e.getMessage(), e);
             }
         }).start();
     }
+
     public int getSdlRefreshRate(boolean idle) {
-        if (idle)
-            return getSDLRefreshRateIdle();
-        else
-            return getSDLRefreshRateDefault();
+        return idle ? getSDLRefreshRateIdle() : getSDLRefreshRateDefault();
     }
+
     public void setSdlRefreshRate(int value, boolean idle) {
-        if (idle)
+        if (idle) {
             setSDLRefreshRateIdle(value);
-        else
+        } else {
             setSDLRefreshRateDefault(value);
+        }
     }
+
     public void setFullscreen() {
         nativeFullscreen();
-        //TODO: sparc doesn't not have vga so we need to
-        // see if we can apply similar call to the cg3
-        if(LimboApplication.arch == Config.Arch.x86
+        if (LimboApplication.arch == Config.Arch.x86
                 || LimboApplication.arch == Config.Arch.x86_64
                 || LimboApplication.arch == Config.Arch.arm
-                || LimboApplication.arch == Config.Arch.arm64
-        ) {
+                || LimboApplication.arch == Config.Arch.arm64) {
             nativeRefreshScreen(1);
         }
     }
+
     public void enableAaudio(int value) {
-        nativeEnableAaudio(value, Config.aaudioLibName,
-                FileUtils.getNativeLibDir(LimboApplication.getInstance())
-                        + "/" + Config.aaudioLibName);
+        try {
+            String aaudioPath = FileUtils.getNativeLibDir(LimboApplication.getInstance()) + "/" + Config.aaudioLibName;
+            nativeEnableAaudio(value, Config.aaudioLibName, aaudioPath);
+        } catch (Exception e) {
+            Log.e(TAG, "enableAaudio failed: " + e.getMessage());
+        }
     }
+
     public int get_fd(String path) {
-        return FileUtils.get_fd(path);
+        try {
+            return FileUtils.get_fd(path);
+        } catch (Exception e) {
+            Log.e(TAG, "get_fd failed: " + e.getMessage());
+            return -1;
+        }
     }
 
-    /**
-     * Fuction is a pass thru from the c close_fd() function called from native code
-     * This is similar to the above get_fd but perhaps not needed.
-     *
-     * @param fd File Descriptor to be closed
-     * @return Return value of FileUtils.close_fd()
-     */
     public int close_fd(int fd) {
-        return FileUtils.close_fd(fd);
-    }
-    /* @NonNull
-    private String getSaveStateName() {
-        String machineSaveDirectory = MachineController.getInstance().getMachineSaveDir();
-        return machineSaveDirectory + "/" + Config.stateFilename;
-    }
-    public String saveVM() {
-
-        // Delete any previous state file
-        File file = new File(getSaveStateName());
-        if (file.exists()) {
-            if (!file.delete()) {
-                return LimboApplication.getInstance().getString(R.string.CannotDeletePreviousStateFile);
-            }
+        try {
+            return FileUtils.close_fd(fd);
+        } catch (Exception e) {
+            Log.e(TAG, "close_fd failed: " + e.getMessage());
+            return -1;
         }
+    }
 
-        if (Config.showToast)
-            Log.i(TAG, LimboApplication.getInstance().getString(R.string.PleaseWaitSavingVMState));
-
-        int currentFd = get_fd(getSaveStateName());
-        String uri = "fd:" + currentFd;
-        String command = QmpClient.getMigrateCommand(false, false, uri);
-        String msg = QmpClient.sendCommand(command);
-        if (msg != null) {
-            return processMigrationResponse(msg);
-        }
-        return null;
-    } */
     public void continueVM() {
-        String command = QmpClient.getContinueVMCommand();
-        QmpClient.sendCommand(command);
+        try {
+            String command = QmpClient.getContinueVMCommand();
+            QmpClient.sendCommand(command);
+        } catch (Exception e) {
+            Log.e(TAG, "continueVM failed: " + e.getMessage());
+        }
     }
+
     @Nullable
     private String processMigrationResponse(String response) {
-        String errorStr = null;
+        if (response == null) return null;
         try {
             JSONObject object = new JSONObject(response);
-            errorStr = object.getString("error");
-        } catch (Exception ex) {
-            if (Config.debug)
-                ex.printStackTrace();
-        }
-        if (errorStr != null) {
-            String descStr = null;
+            String errorStr = object.optString("error", null);
+            if (errorStr == null) return null;
 
-            try {
-                JSONObject descObj = new JSONObject(errorStr);
-                descStr = descObj.getString("desc");
-            } catch (Exception ex) {
-                if (Config.debug)
-                    ex.printStackTrace();
-            }
-            return descStr;
+            JSONObject descObj = new JSONObject(errorStr);
+            return descObj.optString("desc", errorStr);
+
+        } catch (Exception ex) {
+            if (Config.debug) ex.printStackTrace();
+            return null;
         }
-        return null;
     }
+
     public boolean getQMPAllowExternal() {
         return LimboSettingsManager.getEnableExternalQMP(LimboApplication.getInstance());
     }
 }
-

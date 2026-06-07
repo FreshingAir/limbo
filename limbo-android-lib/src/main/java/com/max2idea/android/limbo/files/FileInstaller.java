@@ -77,7 +77,7 @@ public class FileInstaller {
 
         //Get each file in assets under ./roms/ and install in SDCARD
         AssetManager am = activity.getResources().getAssets();
-        String[] files = null;
+        String[] files;
         try {
             files = am.list("roms");
         } catch (IOException ex) {

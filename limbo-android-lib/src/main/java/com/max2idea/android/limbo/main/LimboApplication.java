@@ -18,6 +18,7 @@ Copyright (C) Max Kastanas 2012
  */
 package com.max2idea.android.limbo.main;
 
+import android.app.Application;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
@@ -27,126 +28,199 @@ import android.os.Environment;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.max2idea.android.limbo.files.FileUtils;
 
 import java.io.File;
 
 /**
- * We use the application context for the initiliazation of some of the Storage and
+ * We use the application context for the initialization of some of the Storage and
  * Controller implementations.
  */
-public class LimboApplication {
+public class LimboApplication extends Application {
     private static final String TAG = "LimboApplication";
     //Do not update these directly, see inherited project java files
     public static Config.Arch arch;
-    private static Context sInstance;
-    private static String qemuVersionString;
-    private static int qemuVersion;
-    private static String limboVersionString;
-    private static int limboVersion;
 
-    public static Context getInstance() {
-        return sInstance;
+    // 修复：使用应用上下文，避免内存泄漏
+    private static Context sAppContext;
+
+    private static String qemuVersionString = "unknown";
+    private static int qemuVersion = 0;
+    private static String limboVersionString = "unknown";
+    private static int limboVersion = 0;
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        // 初始化应用上下文
+        sAppContext = getApplicationContext();
+        // 自动初始化
+        initialize();
     }
 
+    /**
+     * 获取全局应用上下文（安全无泄漏）
+     */
+    public static Context getInstance() {
+        if (sAppContext == null) {
+            throw new IllegalStateException("LimboApplication 未初始化，请在 AndroidManifest 中注册");
+        }
+        return sAppContext;
+    }
+
+    /**
+     * 初始化环境信息（版本、目录等）
+     */
     public static void setupEnv(Context context) {
+        if (context == null) return;
+
         try {
-            PackageInfo packageInfo = context.getPackageManager().getPackageInfo(context.getClass().getPackage().getName(),
-                    PackageManager.GET_META_DATA);
+            // 修复：正确获取包名
+            PackageInfo packageInfo = context.getPackageManager().getPackageInfo(
+                    context.getPackageName(),
+                    PackageManager.GET_META_DATA
+            );
             limboVersion = packageInfo.versionCode;
             limboVersionString = packageInfo.versionName;
-            Log.d(TAG, "Limbo Version: " + limboVersion);
-            Log.d(TAG, "Limbo Version Code: " + limboVersionString);
 
-            qemuVersionString = FileUtils.LoadFile(context, "QEMU_VERSION", false);
-            String [] qemuVersionParts = qemuVersionString.trim().split("\\.");
-            qemuVersion = Integer.parseInt(qemuVersionParts[0]) * 10000
-                    + Integer.parseInt(qemuVersionParts[1]) * 100
-                    + Integer.parseInt(qemuVersionParts[2]);
+            Log.d(TAG, "Limbo Version Name: " + limboVersionString);
+            Log.d(TAG, "Limbo Version Code: " + limboVersion);
+
+            // 读取 QEMU 版本
+            String version = FileUtils.LoadFile(context, "QEMU_VERSION", false);
+            if (!version.trim().isEmpty()) {
+                qemuVersionString = version.trim();
+                String[] qemuVersionParts = qemuVersionString.split("\\.");
+                if (qemuVersionParts.length >= 3) {
+                    qemuVersion = Integer.parseInt(qemuVersionParts[0]) * 10000
+                            + Integer.parseInt(qemuVersionParts[1]) * 100
+                            + Integer.parseInt(qemuVersionParts[2]);
+                }
+            }
+
             Log.d(TAG, "Qemu Version: " + qemuVersionString);
             Log.d(TAG, "Qemu Version Number: " + qemuVersion);
+
         } catch (Exception e) {
-//            e.printStackTrace();
-            Log.e(TAG, "Could not load version information: " + e);
+            Log.e(TAG, "Could not load version information: " + e.getMessage());
         }
     }
 
+    /**
+     * 获取应用 UID
+     */
+    @NonNull
     public static String getUserId(@NonNull Context context) {
-        String userid = "None";
         try {
-            ApplicationInfo appInfo = context.getPackageManager().getApplicationInfo(context.getClass().getPackage().getName(),
-                    PackageManager.GET_META_DATA);
-            userid = appInfo.uid + "";
+            ApplicationInfo appInfo = context.getPackageManager().getApplicationInfo(
+                    context.getPackageName(),
+                    PackageManager.GET_META_DATA
+            );
+            return String.valueOf(appInfo.uid);
         } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
+            Log.e(TAG, "getUserId: ", e);
+            return "None";
         }
-        return userid;
     }
 
+    /**
+     * 设备是否支持 64 位
+     */
     public static boolean isHost64Bit() {
         return Build.SUPPORTED_64_BIT_ABIS != null && Build.SUPPORTED_64_BIT_ABIS.length > 0;
     }
 
-    // Legacy
+    /**
+     * 设备是否为 x86_64
+     */
     public static boolean isHostX86_64() {
         if (Build.SUPPORTED_64_BIT_ABIS != null) {
-            for (int i = 0; i < Build.SUPPORTED_64_BIT_ABIS.length; i++)
-                if (Build.SUPPORTED_64_BIT_ABIS[i].equals("x86_64"))
+            for (String abi : Build.SUPPORTED_64_BIT_ABIS) {
+                if ("x86_64".equals(abi)) {
                     return true;
+                }
+            }
         }
         return false;
     }
 
-    // Legacy
+    /**
+     * 设备是否为 32 位 x86
+     */
     public static boolean isHostX86() {
         if (Build.SUPPORTED_32_BIT_ABIS != null) {
-            for (int i = 0; i < Build.SUPPORTED_32_BIT_ABIS.length; i++)
-                if (Build.SUPPORTED_32_BIT_ABIS[i].equals("x86"))
+            for (String abi : Build.SUPPORTED_32_BIT_ABIS) {
+                if ("x86".equals(abi)) {
                     return true;
+                }
+            }
         }
         return false;
     }
 
+    /**
+     * 设备是否为 32 位 ARM
+     */
     public static boolean isHostArm() {
         if (Build.SUPPORTED_32_BIT_ABIS != null) {
-            for (int i = 0; i < Build.SUPPORTED_32_BIT_ABIS.length; i++)
-                if (Build.SUPPORTED_32_BIT_ABIS[i].equals("armeabi-v7a"))
+            for (String abi : Build.SUPPORTED_32_BIT_ABIS) {
+                if ("armeabi-v7a".equals(abi)) {
                     return true;
+                }
+            }
         }
         return false;
     }
 
+    /**
+     * 设备是否为 ARM64-v8a
+     */
     public static boolean isHostArmv8() {
         if (Build.SUPPORTED_64_BIT_ABIS != null) {
-            for (int i = 0; i < Build.SUPPORTED_64_BIT_ABIS.length; i++)
-                if (Build.SUPPORTED_64_BIT_ABIS[i].equals("arm64-v8a"))
+            for (String abi : Build.SUPPORTED_64_BIT_ABIS) {
+                if ("arm64-v8a".equals(abi)) {
                     return true;
+                }
+            }
         }
         return false;
     }
 
-
+    /**
+     * 基础文件目录
+     */
     @NonNull
     public static String getBasefileDir() {
         return getInstance().getCacheDir() + "/limbo/";
     }
 
+    /**
+     * 临时文件夹
+     */
     @NonNull
     public static String getTmpFolder() {
-        return getBasefileDir() + "var/tmp"; // Do not modify
+        return getBasefileDir() + "var/tmp";
     }
 
+    /**
+     * 虚拟机目录
+     */
     @NonNull
     public static String getMachineDir() {
         return getBasefileDir() + Config.machineFolder;
     }
 
+    /**
+     * QMP 套接字路径
+     */
     @NonNull
     public static String getLocalQMPSocketPath() {
         return getInstance().getCacheDir() + "/qmpsocket";
     }
 
+    // ====================== Getter ======================
     public static String getQemuVersionString() {
         return qemuVersionString;
     }
@@ -163,25 +237,33 @@ public class LimboApplication {
         return limboVersion;
     }
 
+    /**
+     * 全局初始化
+     */
     public static void initialize() {
         try {
             Class.forName("android.os.AsyncTask");
-        } catch (Throwable ignore) {
-            // ignored
-        }
-//        MachineOpenHelper.initialize(context);
-//        FavOpenHelper.initialize(context);
+        } catch (Throwable ignore) {}
+
+        setupEnv(getInstance());
         setupFolders();
     }
 
+    /**
+     * 创建必要文件夹
+     */
     private static void setupFolders() {
-        Config.storagedir = Environment.getExternalStorageDirectory().toString();
-        File folder = new File(LimboApplication.getTmpFolder());
-        if (!folder.exists()) {
-            boolean res = folder.mkdirs();
-            if (!res) {
-                Log.e(TAG, "Could not create temp folder: " + folder.getPath());
+        try {
+            // 外部存储路径
+            Config.storagedir = Environment.getExternalStorageDirectory().getAbsolutePath();
+
+            // 创建临时目录
+            File tmpFolder = new File(getTmpFolder());
+            if (!tmpFolder.exists() && !tmpFolder.mkdirs()) {
+                Log.e(TAG, "无法创建临时文件夹: " + tmpFolder.getPath());
             }
+        } catch (Exception e) {
+            Log.e(TAG, "setupFolders 失败: ", e);
         }
     }
 }
