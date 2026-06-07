@@ -56,8 +56,6 @@ libs/
 /sh.exe.stackdump
 roms
 gradle
-/gradlew
-/gradlew.bat
 obj/
 jniLibs/
 QEMU_VERSION
