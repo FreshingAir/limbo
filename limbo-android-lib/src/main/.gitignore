@@ -31,9 +31,6 @@ proguard/
 # Android Studio captures folder
 captures/
 
-#jniLibs
-jniLibs/
-
 #settings
 .settings/
 
