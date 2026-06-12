@@ -73,42 +73,30 @@ void release_sdl_res_jni_cache(JNIEnv *env)
 
 void set_sdl_res(int width, int height)
 {
-	pthread_mutex_lock(&fd_lock);
+    pthread_mutex_lock(&fd_lock);
 
-	// 多层判空，杜绝空指针崩溃
-	if (!g_jni_cache_init || !jvm || !g_cls_res || !g_mid_res_changed)
-	{
-		LOGE("set_sdl_res: JNI cache not ready or invalid");
-		pthread_mutex_unlock(&fd_lock);
-		return;
-	}
+    // 多层判空，杜绝空指针崩溃
+    if (!g_jni_cache_init || !jvm || !g_cls_res || !g_mid_res_changed)
+    {
+        LOGE("set_sdl_res: JNI cache not ready or invalid");
+        pthread_mutex_unlock(&fd_lock);
+        return;
+    }
 
-	JNIEnv *env = NULL;
-	jint rs = (*jvm)->AttachCurrentThread(jvm, &env, NULL);
-	if (rs != JNI_OK || !env)
-	{
-		LOGE("set_sdl_res: AttachCurrentThread failed, ret=%d", rs);
-		pthread_mutex_unlock(&fd_lock);
-		return;
-	}
+    JNIEnv *env = NULL;
+    jint rs = (*jvm)->AttachCurrentThread(jvm, &env, NULL);
+    if (rs != JNI_OK || !env)
+    {
+        LOGE("set_sdl_res: AttachCurrentThread failed, ret=%d", rs);
+        pthread_mutex_unlock(&fd_lock);
+        return;
+    }
 
-	// 调用Java静态方法
-	(*env)->CallStaticVoidMethod(env, g_cls_res, g_mid_res_changed, width, height);
+    // 调用Java静态方法（仅保留这一行）
+    (*env)->CallStaticVoidMethod(env, g_cls_res, g_mid_res_changed, width, height);
 
-// 通知SDL设置渲染视口居中
-    extern void SDL_Android_SetViewport(int x, int y, int w, int h);
-// 计算居中视口
-    int surfW = get_surface_width(); // 可从JNI额外获取surface宽高
-    int surfH = get_surface_height();
-    float scale = fmin((float)surfW / width, (float)surfH / height);
-    int rw = width * scale;
-    int rh = height * scale;
-    int ox = (surfW - rw)/2;
-    int oy = (surfH - rh)/2;
-    SDL_Android_SetViewport(ox, oy, rw, rh);
-
-	(*jvm)->DetachCurrentThread(jvm);
-	pthread_mutex_unlock(&fd_lock);
+    (*jvm)->DetachCurrentThread(jvm);
+    pthread_mutex_unlock(&fd_lock);
 }
 
 void *set_sdl_res_thread(void *t)
