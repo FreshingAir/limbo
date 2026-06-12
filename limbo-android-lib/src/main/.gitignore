@@ -31,8 +31,8 @@ proguard/
 # Android Studio captures folder
 captures/
 
-#libs
-libs/
+#jniLibs
+jniLibs/
 
 #settings
 .settings/
@@ -42,5 +42,3 @@ libs/
 /obj/
 /extra/
 /sh.exe.stackdump
-
-jniLibs
