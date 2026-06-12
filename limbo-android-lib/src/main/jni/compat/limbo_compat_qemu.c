@@ -95,6 +95,18 @@ void set_sdl_res(int width, int height)
 	// 调用Java静态方法
 	(*env)->CallStaticVoidMethod(env, g_cls_res, g_mid_res_changed, width, height);
 
+// 通知SDL设置渲染视口居中
+    extern void SDL_Android_SetViewport(int x, int y, int w, int h);
+// 计算居中视口
+    int surfW = get_surface_width(); // 可从JNI额外获取surface宽高
+    int surfH = get_surface_height();
+    float scale = fmin((float)surfW / width, (float)surfH / height);
+    int rw = width * scale;
+    int rh = height * scale;
+    int ox = (surfW - rw)/2;
+    int oy = (surfH - rh)/2;
+    SDL_Android_SetViewport(ox, oy, rw, rh);
+
 	(*jvm)->DetachCurrentThread(jvm);
 	pthread_mutex_unlock(&fd_lock);
 }

@@ -26,6 +26,7 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 
@@ -44,6 +45,17 @@ import java.util.ArrayList;
 public class LimboSDLSurface extends SDLActivity.ExSDLSurface
         implements View.OnKeyListener, View.OnTouchListener {
     private static final String TAG = "LimboSDLSurface";
+    // 虚拟机原生分辨率
+    private int mVmWidth = 640;
+    private int mVmHeight = 480;
+    // Surface实际画布尺寸
+    private int mSurfaceWidth = 0;
+    private int mSurfaceHeight = 0;
+
+    // 居中偏移 & 缩放系数（用于坐标转换）
+    private float mOffsetX = 0f;
+    private float mOffsetY = 0f;
+    private float mScale = 1f;
 
     MouseState mouseState = new MouseState();
     private boolean firstTouch = false;
@@ -60,9 +72,55 @@ public class LimboSDLSurface extends SDLActivity.ExSDLSurface
         setOnGenericMotionListener(new SDLGenericMotionListener_API12());
     }
 
+    public void setVmNativeSize(int w, int h) {
+        mVmWidth = w;
+        mVmHeight = h;
+        // 分辨率变更后重新计算居中参数
+        calcCenterParams();
+    }
+
+    /**
+     * 计算等比居中的 偏移量、缩放系数（核心居中逻辑）
+     */
+    private void calcCenterParams() {
+        if (mSurfaceWidth <= 0 || mSurfaceHeight <= 0 || mVmWidth <= 0 || mVmHeight <= 0) {
+            mOffsetX = 0f;
+            mOffsetY = 0f;
+            mScale = 1f;
+            return;
+        }
+        // 计算等比缩放比例
+        float scaleX = (float) mSurfaceWidth / mVmWidth;
+        float scaleY = (float) mSurfaceHeight / mVmHeight;
+        mScale = Math.min(scaleX, scaleY);
+
+        // 计算居中偏移
+        float realRenderW = mVmWidth * mScale;
+        float realRenderH = mVmHeight * mScale;
+        mOffsetX = (mSurfaceWidth - realRenderW) / 2f;
+        mOffsetY = (mSurfaceHeight - realRenderH) / 2f;
+
+        Log.d(TAG, String.format("Center calc: scale=%.2f, offsetX=%.2f, offsetY=%.2f",
+                mScale, mOffsetX, mOffsetY));
+
+        // 动态修改当前View布局参数，实现画面物理居中（兼容SDL原生渲染）
+        ViewGroup.LayoutParams params = getLayoutParams();
+        if (params != null) {
+            params.width = (int) realRenderW;
+            params.height = (int) realRenderH;
+            setLayoutParams(params);
+            setX(mOffsetX);
+            setY(mOffsetY);
+        }
+    }
+
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
         Log.d(TAG, "surfaceChanged: " + width + "x" + height);
+        mSurfaceWidth = width;
+        mSurfaceHeight = height;
         super.surfaceChanged(holder, format, width, height);
+        // 尺寸变化 → 重新计算居中
+        calcCenterParams();
         refreshSurfaceView();
     }
 
@@ -71,6 +129,7 @@ public class LimboSDLSurface extends SDLActivity.ExSDLSurface
         Log.d(TAG, "surfaceCreated");
         super.surfaceCreated(holder);
         setWillNotDraw(false);
+        calcCenterParams();
         refreshSurfaceView();
     }
 
@@ -78,10 +137,25 @@ public class LimboSDLSurface extends SDLActivity.ExSDLSurface
         new Thread(sdlActivity::setFullscreen).start();
     }
 
+    /**
+     * 坐标矫正：安卓触摸坐标 → 虚拟机内部坐标（解决触摸错位）
+     */
+    private float convertTouchX(float rawX) {
+        return (rawX - mOffsetX) / mScale;
+    }
+
+    private float convertTouchY(float rawY) {
+        return (rawY - mOffsetY) / mScale;
+    }
+
     public boolean onTouchProcess(View v, @NonNull MotionEvent event) {
         int action = event.getActionMasked();
-        mouseState.x = event.getX();
-        mouseState.y = event.getY();
+        // 原始坐标
+        float rawX = event.getX();
+        float rawY = event.getY();
+        // 转换为虚拟机画布坐标
+        mouseState.x = convertTouchX(rawX);
+        mouseState.y = convertTouchY(rawY);
 
         processMouseMovement(action, event.getToolType(0), mouseState.x, mouseState.y);
         processMouseButton(event, action, mouseState.x, mouseState.y);
@@ -261,10 +335,12 @@ public class LimboSDLSurface extends SDLActivity.ExSDLSurface
                     && taps.size() >= 3
                     && taps.get(0).toolType == MotionEvent.TOOL_TYPE_FINGER
                     && taps.get(0).action == MotionEvent.ACTION_DOWN
-                    && taps.get(1).toolType == MotionEvent.TOOL_TYPE_FINGER
-                    && taps.get(1).action == MotionEvent.ACTION_UP
                     && taps.get(0).x == taps.get(1).x
                     && taps.get(0).y == taps.get(1).y
+                    && taps.get(1).toolType == MotionEvent.TOOL_TYPE_FINGER
+                    && taps.get(1).action == MotionEvent.ACTION_UP
+                    && taps.get(1).x == taps.get(2).x
+                    && taps.get(1).y == taps.get(2).y
                     && taps.get(2).toolType == MotionEvent.TOOL_TYPE_FINGER
                     && taps.get(2).action == MotionEvent.ACTION_DOWN;
         }
@@ -318,13 +394,19 @@ public class LimboSDLSurface extends SDLActivity.ExSDLSurface
                                     float ex = event.getHistoricalX(h);
                                     float ey = event.getHistoricalY(h);
                                     float ep = event.getHistoricalPressure(h);
-                                    sdlActivity.sendMouseEvent(action, event.getToolType(0), ex, ey);
+                                    // 坐标转换
+                                    float cx = convertTouchX(ex);
+                                    float cy = convertTouchY(ey);
+                                    sdlActivity.sendMouseEvent(action, event.getToolType(0), cx, cy);
                                 }
                             }
                             float ex = event.getX();
                             float ey = event.getY();
                             float ep = event.getPressure();
-                            sdlActivity.sendMouseEvent(action, event.getToolType(0), ex, ey);
+                            // 坐标转换
+                            float cx = convertTouchX(ex);
+                            float cy = convertTouchY(ey);
+                            sdlActivity.sendMouseEvent(action, event.getToolType(0), cx, cy);
                             return true;
                         case MotionEvent.ACTION_UP:
                         default:

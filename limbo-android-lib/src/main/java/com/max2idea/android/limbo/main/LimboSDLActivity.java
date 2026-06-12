@@ -353,7 +353,11 @@ public class LimboSDLActivity extends SDLActivity {
     public static void onVMResolutionChanged(int width, int height) {
         Log.d("ResolutionCallback", "VM Resolution: " + width + " x " + height);
         if (mSurface instanceof LimboSDLSurface) {
-            ((LimboSDLSurface) mSurface).refreshSurfaceView();
+            LimboSDLSurface sdlSurf = ((LimboSDLSurface) mSurface);
+            // 传递虚拟机原生分辨率给渲染层
+            sdlSurf.setVmNativeSize(width, height);
+            // 执行带居中缩放的刷新
+            sdlSurf.refreshSurfaceView();
         }
     }
 
