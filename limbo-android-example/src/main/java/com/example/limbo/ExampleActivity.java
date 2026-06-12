@@ -31,6 +31,7 @@ public class ExampleActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         extraArgs = findViewById(R.id.args);
+        extraArgs.setText(R.string.deafult_args);
         startButton = findViewById(R.id.start);
         startButton.setOnClickListener(v -> startVM());
 
