@@ -1,8 +1,12 @@
 package com.example.limbo;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -12,6 +16,7 @@ import android.widget.Toast;
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.OnBackPressedDispatcher;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.hjq.permissions.XXPermissions;
@@ -22,10 +27,12 @@ import com.max2idea.android.limbo.main.LimboSDLActivity;
 
 import org.libsdl.app.SDLActivity;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -33,19 +40,24 @@ import java.util.regex.Pattern;
 
 public class ExampleActivity extends AppCompatActivity {
     private EditText extraArgs;
-    private Button startButton;
+
     @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle(R.string.agreement_confirm)
+                .setMessage(readAssetText(this, "LICENSE"))
+                .setPositiveButton(R.string.agreement_accept, (dialog2, which) -> dialog2.dismiss())
+                .setNegativeButton(R.string.agreement_reject, (dialog1, which) -> finish()).show();
         extraArgs = findViewById(R.id.args);
         String bootFile="";
         try {
             bootFile = copyAssetToFile(this, "boot.bin").getAbsolutePath();
         } catch (IOException e) {
-            Toast.makeText(this, "读取文件失败。", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.file_load_failed, Toast.LENGTH_SHORT).show();
         }
         extraArgs.setText("libqemu-system-x86_64.so\n" +
                 "-monitor none\n" +
@@ -64,7 +76,7 @@ public class ExampleActivity extends AppCompatActivity {
                 "-rtc base=localtime\n" +
                 "-nodefaults\n" +
                 "-accel tcg,thread=single");
-        startButton = findViewById(R.id.start);
+        Button startButton = findViewById(R.id.button_start);
         startButton.setOnClickListener(v -> startVM());
 
         XXPermissions.with(this)
@@ -75,21 +87,17 @@ public class ExampleActivity extends AppCompatActivity {
                 .request((grantedList, deniedList) -> {
                     boolean allGranted = deniedList.isEmpty();
                     if (!allGranted) {
-                        // 判断请求失败的权限是否被用户勾选了不再询问的选项
                         boolean doNotAskAgain = XXPermissions.isDoNotAskAgainPermissions(this, deniedList);
-                        // 在这里处理权限请求失败的逻辑
-                        // ......
                         finish();
                     }
                     // 在这里处理权限请求成功的逻辑
-                    // ......
                 });
         OnBackPressedDispatcher dispatcher = getOnBackPressedDispatcher();
         dispatcher.addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
                 // 自定义返回逻辑
-                Toast.makeText(ExampleActivity.this, "退出", Toast.LENGTH_SHORT).show();
+                Toast.makeText(ExampleActivity.this, R.string.exit, Toast.LENGTH_SHORT).show();
                 ExampleActivity.this.finish();
             }
         });
@@ -136,6 +144,25 @@ public class ExampleActivity extends AppCompatActivity {
         fos.close();
         is.close();
         return outFile;
+    }
+    @Nullable
+    public static String readAssetText(@NonNull Context context, String fileName) {
+        StringBuilder sb = new StringBuilder();
+        AssetManager assetManager = context.getAssets();
+        try (InputStream inputStream = assetManager.open(fileName); BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+            try {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line).append("\n");
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return sb.toString();
     }
     @NonNull
     public static String[] parseCorrectQemuArgs(String command) {
