@@ -2,21 +2,4 @@
     <string name="app_name">LimboExample</string>
     <string name="start">启动</string>
     <string name="extra_args">附加参数：</string>
-    <string name="deafult_args">libqemu-system-x86_64.so
--monitor none
--serial none
--parallel none
--k en-us
--M pc
--cpu n270,-tsc
--m 128
--drive index=0,if=floppy,file=/storage/emulated/0/boot.bin
--vga std
--net none
--L /data/user/0/com.example.limbo/cache/limbo/
--qmp unix:/data/user/0/com.example.limbo/cache/qmpsocket,server,nowait
--overcommit mem-lock=off
--rtc base=localtime
--nodefaults
--accel tcg,thread=single</string>
 </resources>

@@ -1,11 +1,16 @@
 package com.example.limbo;
 
+import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
+import androidx.activity.OnBackPressedDispatcher;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -17,6 +22,10 @@ import com.max2idea.android.limbo.main.LimboSDLActivity;
 
 import org.libsdl.app.SDLActivity;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -25,14 +34,36 @@ import java.util.regex.Pattern;
 public class ExampleActivity extends AppCompatActivity {
     private EditText extraArgs;
     private Button startButton;
-
+    @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         extraArgs = findViewById(R.id.args);
-        extraArgs.setText(R.string.deafult_args);
+        String bootFile="";
+        try {
+            bootFile = copyAssetToFile(this, "boot.bin").getAbsolutePath();
+        } catch (IOException e) {
+            Toast.makeText(this, "读取文件失败。", Toast.LENGTH_SHORT).show();
+        }
+        extraArgs.setText("libqemu-system-x86_64.so\n" +
+                "-monitor none\n" +
+                "-serial none\n" +
+                "-parallel none\n" +
+                "-k en-us\n" +
+                "-M pc\n" +
+                "-cpu n270,-tsc\n" +
+                "-m 128\n" +
+                "-drive index=0,if=floppy,file=" + bootFile + "\n" +
+                "-vga std\n" +
+                "-net none\n" +
+                "-L /data/user/0/com.example.limbo/cache/limbo/\n" +
+                "-qmp unix:/data/user/0/com.example.limbo/cache/qmpsocket,server,nowait\n" +
+                "-overcommit mem-lock=off\n" +
+                "-rtc base=localtime\n" +
+                "-nodefaults\n" +
+                "-accel tcg,thread=single");
         startButton = findViewById(R.id.start);
         startButton.setOnClickListener(v -> startVM());
 
@@ -53,8 +84,16 @@ public class ExampleActivity extends AppCompatActivity {
                     // 在这里处理权限请求成功的逻辑
                     // ......
                 });
+        OnBackPressedDispatcher dispatcher = getOnBackPressedDispatcher();
+        dispatcher.addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                // 自定义返回逻辑
+                Toast.makeText(ExampleActivity.this, "退出", Toast.LENGTH_SHORT).show();
+                ExampleActivity.this.finish();
+            }
+        });
     }
-
     private void startVM() {
         try {
             LimboApplication.initialize();
@@ -81,10 +120,23 @@ public class ExampleActivity extends AppCompatActivity {
             Toast.makeText(this, "错误: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
+    // 复制assets文件到 /data/data/包名/files/
+    @NonNull
+    private File copyAssetToFile(@NonNull Context context, String assetName) throws IOException {
+        File outFile = new File(context.getFilesDir(), assetName);
+        InputStream is = context.getAssets().open(assetName);
+        FileOutputStream fos = new FileOutputStream(outFile);
 
-    // ==============================================
-    // ✅ 这是 QEMU 唯一正确的参数解析方法
-    // ==============================================
+        byte[] buf = new byte[1024];
+        int len;
+        while ((len = is.read(buf)) > 0) {
+            fos.write(buf, 0, len);
+        }
+        fos.flush();
+        fos.close();
+        is.close();
+        return outFile;
+    }
     @NonNull
     public static String[] parseCorrectQemuArgs(String command) {
         List<String> tokens = new ArrayList<>();
