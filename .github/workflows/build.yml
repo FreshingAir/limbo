@@ -62,7 +62,7 @@ jobs:
           #Note: if some of these file links don't download with wget use your browser to download them
           
           ##### Get QEMU
-          git clone --branch v5.1.0 --depth 1 https:///github.com/qemu/qemu.git /tmp/qemu
+          git clone --branch v5.2.0 --depth 1 https:///github.com/qemu/qemu.git /tmp/qemu
           mv /tmp/qemu qemu
                 
           cd qemu
@@ -95,7 +95,14 @@ jobs:
           
           cd SDL2
           patch -p1 < ../patches/sdl2-2.0.8.patch
-
+      - name: 上传补丁冲突文件（patch失败专用）
+        if: failure()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: patch_conflict_rej_orig
+          path: |
+            ./limbo-android-lib/src/main/jni/**/*.rej
+            ./limbo-android-lib/src/main/jni/**/*.orig
       - name: Build QEMU
         run: |
           cd limbo-android-lib/src/main/jni

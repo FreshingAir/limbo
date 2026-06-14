@@ -2,13 +2,10 @@ package com.example.limbo;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -24,8 +21,6 @@ import com.hjq.permissions.permission.PermissionLists;
 import com.max2idea.android.limbo.VmUtils;
 import com.max2idea.android.limbo.main.LimboApplication;
 import com.max2idea.android.limbo.main.LimboSDLActivity;
-
-import org.libsdl.app.SDLActivity;
 
 import java.io.BufferedReader;
 import java.io.File;
