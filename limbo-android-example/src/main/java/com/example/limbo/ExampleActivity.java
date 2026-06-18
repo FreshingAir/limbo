@@ -3,7 +3,7 @@ package com.example.limbo;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.Intent;
+//import android.content.Intent;
 import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.widget.Button;
@@ -20,7 +20,6 @@ import com.hjq.permissions.XXPermissions;
 import com.hjq.permissions.permission.PermissionLists;
 import com.max2idea.android.limbo.VmUtils;
 import com.max2idea.android.limbo.main.LimboApplication;
-import com.max2idea.android.limbo.main.LimboSDLActivity;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -107,8 +106,8 @@ public class ExampleActivity extends AppCompatActivity {
 
             VmUtils.init();
 
-            Intent intent = new Intent(this, LimboSDLActivity.class);
-            startActivity(intent);
+//            Intent intent = new Intent(this, LimboSDLActivity.class);
+//            startActivity(intent);
 
             new Thread(() -> {
                 try {

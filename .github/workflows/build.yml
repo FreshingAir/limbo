@@ -75,12 +75,12 @@ jobs:
           mv pixman-0.40.0 pixman
           
           ##### GET SDL2
-          wget --quiet https://www.libsdl.org/release/SDL2-2.0.8.tar.gz -P /tmp/
-          tar -xzf /tmp/SDL2-2.0.8.tar.gz
-          mv SDL2-2.0.8 SDL2
-          
-          cd SDL2
-          patch -p1 < ../patches/sdl2-2.0.8.patch
+          # wget --quiet https://www.libsdl.org/release/SDL2-2.0.8.tar.gz -P /tmp/
+          # tar -xzf /tmp/SDL2-2.0.8.tar.gz
+          # mv SDL2-2.0.8 SDL2
+
+          # cd SDL2
+          # patch -p1 < ../patches/sdl2-2.0.8.patch
       - name: 上传补丁冲突文件（patch失败专用）
         if: failure()
         uses: actions/upload-artifact@v7.0.1
