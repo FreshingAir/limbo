@@ -8,7 +8,7 @@ USE_QEMUSTAB ?= false
 USE_SLIRP_LIB ?= true
 
 # For QEMU 5.0.0 set the explicit sdlabi to false
-USE_SDL_ABI ?= false
+# USE_SDL_ABI ?= false
 
 # For QEMU 2.11.0 and above (3.x, 4.x) disable these features
 MISC += --disable-capstone

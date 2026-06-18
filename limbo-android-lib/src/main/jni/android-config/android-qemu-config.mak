@@ -29,10 +29,10 @@ COROUTINE_POOL = --enable-coroutine-pool
 ifeq ($(USE_SDL),true)
 	#ENABLE SDL
 	SDL = --enable-sdl
-	ifeq ($(USE_SDL_ABI),true)
-		#SDL += --with-sdlabi=1.2
-		SDL += --with-sdlabi=2.0
-	endif
+# 	ifeq ($(USE_SDL_ABI),true)
+# 		#SDL += --with-sdlabi=1.2
+# 		SDL += --with-sdlabi=2.0
+# 	endif
 else 
 	# DISABLE
 	SDL = --disable-sdl
@@ -251,7 +251,6 @@ config:
 	-I$(LIMBO_JNI_ROOT)/pixman \
 	-I$(LIMBO_JNI_ROOT)/pixman/pixman \
 	-I$(LIMBO_JNI_ROOT)/scsi \
-	-I$(LIMBO_JNI_ROOT)/SDL2/include  \
 	-I$(LIMBO_JNI_ROOT)/compat  \
 	$(SPICE_INC) \
 	$(FDT_INC) \
@@ -265,3 +264,4 @@ config:
 	$(DEBUG) \
 	$(CONFIG_PROFILER)
 
+# 	-I$(LIMBO_JNI_ROOT)/SDL2/include  \

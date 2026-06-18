@@ -52,10 +52,10 @@ BUILD_GUEST?=x86_64-softmmu
 USE_QEMU_VERSION ?= 5.1.0
 
 # If you want to use SDL interface
-USE_SDL ?= true
+# USE_SDL ?= true
 
 # If you want to use SDL Audio with Android AudioTrack
-USE_SDL_AUDIO ?= true
+# USE_SDL_AUDIO ?= true
 
 # if you want to use Android AAudio, it needs version platform API 26
 USE_AAUDIO ?= true

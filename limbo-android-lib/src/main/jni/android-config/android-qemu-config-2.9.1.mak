@@ -7,7 +7,7 @@ USE_QEMUSTAB ?= true
 USE_SLIRP_LIB ?= false
 
 # set the explicit sdlabi
-USE_SDL_ABI ?= true
+# USE_SDL_ABI ?= true
 
 # we need to specify our own pixman library
 # For 2.9.x and prior pixman is included in QEMU so we request this explicitly
