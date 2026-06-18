@@ -4,10 +4,6 @@
 
 include ../../android-config/android-qemu-config.mak
 
-# ifeq ($(USE_SDL),true)
-# sdllibs=../../../obj/local/$(APP_ABI)/libSDL2.so
-# endif
-
 glibs=-lglib-2.0
 
 musllib=-lcompat-musl
@@ -113,4 +109,3 @@ $(QEMU_PROG): $(all-obj-y) $(COMMON_LDADDS) qemu-static
 	$(EXTRA_LIBS) \
 	$(INCLUDE_SYMS) \
 	-o $(LIBQEMU)
-# 	$(sdllibs) \
