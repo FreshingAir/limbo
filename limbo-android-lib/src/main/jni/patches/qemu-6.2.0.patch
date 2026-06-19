@@ -88,7 +88,7 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/hw/display/vga.c ./hw/display/vga.c
          page0 = addr & s->vbe_size_mask;
          page1 = (addr + bwidth - 1) & s->vbe_size_mask;
          if (full_update) {
-@@ -1726,6 +1736,9 @@
+@@ -1726,6 +1726,9 @@
          /* flush to display */
          dpy_gfx_update(s->con, 0, y_start,
                         disp_width, y - y_start);
