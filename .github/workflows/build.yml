@@ -19,21 +19,6 @@ jobs:
     steps:
       - name: 检出代码
         uses: actions/checkout@v6
-      - name: Setup Java
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'temurin'
-          java-version: 17
-      - name: Setup Android SDK Tools
-        uses: android-actions/setup-android@v3.2.1
-        with:
-          packages: 'ndk;28.2.13676358'
-
-      - name: 安装依赖
-        run: |
-          sudo apt-get install make autoconf automake git binutils python3 \
-            libtool-bin pkg-config flex bison gettext texinfo rsync \
-            gtk-doc-tools
       - name: 克隆代码
         run: |
           #Make sure you're under the jni directory
@@ -43,7 +28,7 @@ jobs:
           #Note: if some of these file links don't download with wget use your browser to download them
           
           ##### Get QEMU
-          git clone --branch 3.4.10 --depth 1 https://github.com/qemu/qemu.git /tmp/qemu
+          git clone --branch release-3.4.10 --depth 1 https://github.com/qemu/qemu.git /tmp/qemu
           mv /tmp/qemu qemu
                 
           cd qemu
@@ -79,6 +64,20 @@ jobs:
           path: |
             ./limbo-android-lib/src/main/jni/**/*.rej
             ./limbo-android-lib/src/main/jni/**/*.orig
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: 17
+      - name: 安装依赖
+        run: |
+          sudo apt-get install make autoconf automake git binutils python3 \
+            libtool-bin pkg-config flex bison gettext texinfo rsync \
+            gtk-doc-tools
+      - name: Setup Android SDK Tools
+        uses: android-actions/setup-android@v3.2.1
+        with:
+          packages: 'ndk;28.2.13676358'
       - name: Build QEMU
         run: |
           cd limbo-android-lib/src/main/jni
