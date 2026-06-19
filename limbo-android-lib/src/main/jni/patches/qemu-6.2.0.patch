@@ -1,9 +1,22 @@
-diff -ru --no-dereference /tmp/qemu-6.2.0/accel/kvm/kvm-all.c ./accel/kvm/kvm-all.c
---- /tmp/qemu-6.2.0/accel/kvm/kvm-all.c
-+++ ./accel/kvm/kvm-all.c
-@@ -2015,7 +2015,12 @@
-     s->vmfd = -1;
-     s->fd = qemu_open("/dev/kvm", O_RDWR);
+diff -ru --no-dereference qemu-orig/Makefile qemu/Makefile
+--- qemu-orig/Makefile	2026-06-19 18:48:23.295128400 +0800
++++ qemu/Makefile	2026-06-19 18:49:13.215891000 +0800
+@@ -185,7 +185,8 @@
+ 
+ SUBDIR_MAKEFLAGS=$(if $(V),,--no-print-directory --quiet)
+ 
+-include $(SRC_PATH)/tests/Makefile.include
++#Limbo: ignore
++#include $(SRC_PATH)/tests/Makefile.include
+ 
+ all: recurse-all
+ 
+diff -ru --no-dereference qemu-orig/accel/kvm/kvm-all.c qemu/accel/kvm/kvm-all.c
+--- qemu-orig/accel/kvm/kvm-all.c	2026-06-19 18:48:23.304893300 +0800
++++ qemu/accel/kvm/kvm-all.c	2026-06-19 18:49:11.495250300 +0800
+@@ -2344,7 +2344,12 @@
+     QLIST_INIT(&s->kvm_parked_vcpus);
+     s->fd = qemu_open_old("/dev/kvm", O_RDWR);
      if (s->fd == -1) {
 +#ifdef __LIMBO__
 +         //no m specifier in android
@@ -14,11 +27,10 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/accel/kvm/kvm-all.c ./accel/kvm/kvm-al
          ret = -errno;
          goto err;
      }
-
-diff -ru --no-dereference /tmp/qemu-6.2.0/audio/audio.c ./audio/audio.c
---- /tmp/qemu-6.2.0/audio/audio.c
-+++ ./audio/audio.c
-@@ -2005,7 +2005,11 @@
+diff -ru --no-dereference qemu-orig/audio/audio.c qemu/audio/audio.c
+--- qemu-orig/audio/audio.c	2026-06-19 18:48:23.337149600 +0800
++++ qemu/audio/audio.c	2026-06-19 18:49:11.517700300 +0800
+@@ -2037,7 +2037,11 @@
  
      if (!pdo->has_frequency) {
          pdo->has_frequency = true;
@@ -30,10 +42,9 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/audio/audio.c ./audio/audio.c
      }
      if (!pdo->has_channels) {
          pdo->has_channels = true;
-
-diff -ru --no-dereference /tmp/qemu-6.2.0/audio/audio_legacy.c ./audio/audio_legacy.c
---- /tmp/qemu-6.2.0/audio/audio_legacy.c
-+++ ./audio/audio_legacy.c
+diff -ru --no-dereference qemu-orig/audio/audio_legacy.c qemu/audio/audio_legacy.c
+--- qemu-orig/audio/audio_legacy.c	2026-06-19 18:48:23.339166500 +0800
++++ qemu/audio/audio_legacy.c	2026-06-19 18:49:11.520667000 +0800
 @@ -105,7 +105,11 @@
  static uint32_t frames_to_usecs(uint32_t frames,
                                  AudiodevPerDirectionOptions *pdo)
@@ -45,11 +56,21 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/audio/audio_legacy.c ./audio/audio_leg
 +#endif
      return (frames * 1000000 + freq / 2) / freq;
  }
-
-diff -ru --no-dereference /tmp/qemu-6.2.0/configure ./configure
---- /tmp/qemu-6.2.0/configure
-+++ ./configure
-@@ -2435,7 +2435,8 @@
+ 
+diff -ru --no-dereference qemu-orig/configure qemu/configure
+--- qemu-orig/configure	2026-06-19 18:48:23.596465100 +0800
++++ qemu/configure	2026-06-19 19:00:52.139928500 +0800
+@@ -1943,7 +1943,8 @@
+ # pkg-config probe
+ 
+ if ! has "$pkg_config_exe"; then
+-  error_exit "pkg-config binary '$pkg_config_exe' not found"
++  #error_exit "pkg-config binary '$pkg_config_exe' not found"
++  echo Limbo: ignoring pkg-config
+ fi
+ 
+ ##########################################
+@@ -2435,7 +2436,8 @@
  # glib support probe
  
  glib_req_ver=2.56
@@ -59,11 +80,19 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/configure ./configure
  if test "$modules" = yes; then
      glib_modules="$glib_modules gmodule-export-2.0"
  elif test "$plugins" = "yes"; then
-
-diff -ru --no-dereference /tmp/qemu-6.2.0/hw/display/vga.c ./hw/display/vga.c
---- /tmp/qemu-6.2.0/hw/display/vga.c
-+++ ./hw/display/vga.c
-@@ -1458,6 +1458,12 @@
+@@ -4033,6 +4035,8 @@
+ else
+     :> config-poison.h
+ fi
++# Limbo: memfd is not present for clang until api 30
++memfd=no
+ 
+ # Save the configure command line for later reuse.
+ cat <<EOD >config.status
+diff -ru --no-dereference qemu-orig/hw/display/vga.c qemu/hw/display/vga.c
+--- qemu-orig/hw/display/vga.c	2026-06-19 18:48:24.209672800 +0800
++++ qemu/hw/display/vga.c	2026-06-19 21:21:14.217196500 +0800
+@@ -1461,6 +1461,12 @@
      memory_region_set_log(&s->vram, false, DIRTY_MEMORY_VGA);
  }
  
@@ -76,7 +105,7 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/hw/display/vga.c ./hw/display/vga.c
  /*
   * graphic modes
   */
-@@ -1674,7 +1680,11 @@
+@@ -1677,6 +1683,11 @@
          if (!(s->cr[VGA_CRTC_MODE] & 2)) {
              addr = (addr & ~0x8000) | ((y1 & 2) << 14);
          }
@@ -88,7 +117,7 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/hw/display/vga.c ./hw/display/vga.c
          page0 = addr & s->vbe_size_mask;
          page1 = (addr + bwidth - 1) & s->vbe_size_mask;
          if (full_update) {
-@@ -1726,6 +1726,9 @@
+@@ -1728,6 +1739,9 @@
          /* flush to display */
          dpy_gfx_update(s->con, 0, y_start,
                         disp_width, y - y_start);
@@ -98,10 +127,9 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/hw/display/vga.c ./hw/display/vga.c
      }
      g_free(snap);
      memset(s->invalidated_y_table, 0, sizeof(s->invalidated_y_table));
-
-diff -ru --no-dereference /tmp/qemu-6.2.0/include/qemu/osdep.h ./include/qemu/osdep.h
---- /tmp/qemu-6.2.0/include/qemu/osdep.h
-+++ ./include/qemu/osdep.h
+diff -ru --no-dereference qemu-orig/include/qemu/osdep.h qemu/include/qemu/osdep.h
+--- qemu-orig/include/qemu/osdep.h	2026-06-19 18:48:25.606579800 +0800
++++ qemu/include/qemu/osdep.h	2026-06-19 18:49:13.211986400 +0800
 @@ -36,6 +36,10 @@
  
  #include "qemu/compiler.h"
@@ -113,10 +141,9 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/include/qemu/osdep.h ./include/qemu/os
  /* Older versions of C++ don't get definitions of various macros from
   * stdlib.h unless we define these macros before first inclusion of
   * that system header.
-
-diff -ru --no-dereference /tmp/qemu-6.2.0/include/ui/console.h ./include/ui/console.h
---- /tmp/qemu-6.2.0/include/ui/console.h
-+++ ./include/ui/console.h
+diff -ru --no-dereference qemu-orig/include/ui/console.h qemu/include/ui/console.h
+--- qemu-orig/include/ui/console.h	2026-06-19 18:48:25.713018800 +0800
++++ qemu/include/ui/console.h	2026-06-19 18:49:13.213938900 +0800
 @@ -26,8 +26,16 @@
  #define QEMU_CAPS_LOCK_LED   (1 << 2)
  
@@ -134,10 +161,9 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/include/ui/console.h ./include/ui/cons
  
  /* Color number is match to standard vga palette */
  enum qemu_color_names {
-
-diff -ru --no-dereference /tmp/qemu-6.2.0/monitor/misc.c ./monitor/misc.c
---- /tmp/qemu-6.2.0/monitor/misc.c
-+++ ./monitor/misc.c
+diff -ru --no-dereference qemu-orig/monitor/misc.c qemu/monitor/misc.c
+--- qemu-orig/monitor/misc.c	2026-06-19 18:48:26.089563300 +0800
++++ qemu/monitor/misc.c	2026-06-19 19:02:26.057703300 +0800
 @@ -1040,6 +1040,13 @@
      mon_fd_t *monfd;
      int tmp_fd;
@@ -152,11 +178,10 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/monitor/misc.c ./monitor/misc.c
      qemu_mutex_lock(&cur_mon->mon_lock);
      QLIST_FOREACH(monfd, &cur_mon->fds, next) {
          if (strcmp(monfd->name, fdname) != 0) {
-
-diff -ru --no-dereference /tmp/qemu-6.2.0/ui/console.c ./ui/console.c
---- /tmp/qemu-6.2.0/ui/console.c
-+++ ./ui/console.c
-@@ -38,6 +38,11 @@
+diff -ru --no-dereference qemu-orig/ui/console.c qemu/ui/console.c
+--- qemu-orig/ui/console.c	2026-06-19 18:48:29.176724300 +0800
++++ qemu/ui/console.c	2026-06-19 18:49:13.913984000 +0800
+@@ -41,6 +41,11 @@
  #define DEFAULT_BACKSCROLL 512
  #define CONSOLE_CURSOR_PERIOD 500
  
@@ -168,11 +193,10 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/ui/console.c ./ui/console.c
  typedef struct TextAttributes {
      uint8_t fgcol:4;
      uint8_t bgcol:4;
-
-diff -ru --no-dereference /tmp/qemu-6.2.0/ui/sdl2-2d.c ./ui/sdl2-2d.c
---- /tmp/qemu-6.2.0/ui/sdl2-2d.c
-+++ ./ui/sdl2-2d.c
-@@ -125,6 +125,12 @@
+diff -ru --no-dereference qemu-orig/ui/sdl2-2d.c qemu/ui/sdl2-2d.c
+--- qemu-orig/ui/sdl2-2d.c	2026-06-19 18:48:29.201129000 +0800
++++ qemu/ui/sdl2-2d.c	2026-06-19 18:49:13.915936900 +0800
+@@ -122,6 +122,12 @@
                                        surface_width(new_surface),
                                        surface_height(new_surface));
      sdl2_2d_redraw(scon);
@@ -183,11 +207,12 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/ui/sdl2-2d.c ./ui/sdl2-2d.c
 +#endif //__ANDROID__
 +
  }
-
-diff -ru --no-dereference /tmp/qemu-6.2.0/ui/sdl2.c ./ui/sdl2.c
---- /tmp/qemu-6.2.0/ui/sdl2.c
-+++ ./ui/sdl2.c
-@@ -89,7 +89,16 @@
+ 
+ void sdl2_2d_refresh(DisplayChangeListener *dcl)
+diff -ru --no-dereference qemu-orig/ui/sdl2.c qemu/ui/sdl2.c
+--- qemu-orig/ui/sdl2.c	2026-06-19 18:48:29.203078200 +0800
++++ qemu/ui/sdl2.c	2026-06-19 18:49:13.918865900 +0800
+@@ -96,7 +96,16 @@
                                           surface_width(scon->surface),
                                           surface_height(scon->surface),
                                           flags);
@@ -205,7 +230,7 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/ui/sdl2.c ./ui/sdl2.c
      if (scon->opengl) {
          scon->winctx = SDL_GL_GetCurrentContext();
      }
-@@ -272,6 +281,13 @@
+@@ -281,6 +290,13 @@
      };
      static uint32_t prev_state;
  
@@ -219,7 +244,7 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/ui/sdl2.c ./ui/sdl2.c
      if (prev_state != state) {
          qemu_input_update_buttons(scon->dcl.con, bmap, prev_state, state);
          prev_state = state;
-@@ -627,6 +643,10 @@
+@@ -636,6 +652,10 @@
      }
  
      while (SDL_PollEvent(ev)) {
@@ -230,7 +255,7 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/ui/sdl2.c ./ui/sdl2.c
          switch (ev->type) {
          case SDL_KEYDOWN:
              idle = 0;
-@@ -789,6 +809,10 @@
+@@ -797,6 +817,10 @@
      }
  }
  
@@ -241,7 +266,7 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/ui/sdl2.c ./ui/sdl2.c
  static void sdl2_display_init(DisplayState *ds, DisplayOptions *o)
  {
      uint8_t data = 0;
-@@ -798,6 +822,7 @@
+@@ -807,6 +831,7 @@
  
      assert(o->type == DISPLAY_TYPE_SDL);
  
@@ -249,9 +274,9 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/ui/sdl2.c ./ui/sdl2.c
  #ifdef __linux__
      /* on Linux, SDL may use fbcon|directfb|svgalib when run without
       * accessible $DISPLAY to open X11 window.  This is often the case
-@@ -810,6 +835,12 @@
-      */
-     g_setenv("SDL_VIDEODRIVER", "x11", 0);
+@@ -822,6 +847,12 @@
+         exit(1);
+     }
  #endif
 +#else
 +    if(limbo_sdl_scale_hint == 1) {
@@ -262,12 +287,11 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/ui/sdl2.c ./ui/sdl2.c
  
      if (SDL_Init(SDL_INIT_VIDEO)) {
          fprintf(stderr, "Could not initialize SDL(%s) - exiting\n",
-
-diff -ru --no-dereference /tmp/qemu-6.2.0/ui/vnc.c ./ui/vnc.c
---- /tmp/qemu-6.2.0/ui/vnc.c
-+++ ./ui/vnc.c
-@@ -51,8 +51,19 @@
- #include "qemu/cutils.h"
+diff -ru --no-dereference qemu-orig/ui/vnc.c qemu/ui/vnc.c
+--- qemu-orig/ui/vnc.c	2026-06-19 18:48:29.228478500 +0800
++++ qemu/ui/vnc.c	2026-06-19 18:49:13.922810100 +0800
+@@ -56,8 +56,19 @@
+ #include "qemu/help_option.h"
  #include "io/dns-resolver.h"
  
 +//LIMBO: we can override the refresh rate for VNC here
@@ -286,7 +310,7 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/ui/vnc.c ./ui/vnc.c
  #define VNC_REFRESH_INTERVAL_MAX  GUI_REFRESH_INTERVAL_IDLE
  static const struct timeval VNC_REFRESH_STATS = { 0, 500000 };
  static const struct timeval VNC_REFRESH_LOSSY = { 2, 0 };
-@@ -1962,6 +1973,40 @@
+@@ -2053,6 +2064,40 @@
      return QKeyCode_str(qemu_input_key_number_to_qcode(keycode));
  }
  
@@ -327,7 +351,7 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/ui/vnc.c ./ui/vnc.c
  static void key_event(VncState *vs, int down, uint32_t sym)
  {
      int keycode;
-@@ -1970,10 +2015,13 @@
+@@ -2061,10 +2106,13 @@
      if (lsym >= 'A' && lsym <= 'Z' && qemu_console_is_graphic(NULL)) {
          lsym = lsym - 'A' + 'a';
      }
@@ -340,11 +364,21 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/ui/vnc.c ./ui/vnc.c
 +		return;
 +#endif     
      do_key_event(vs, down, keycode, sym);
+ }
  
-diff -ru --no-dereference /tmp/qemu-6.2.0/util/qemu-openpty.c ./util/qemu-openpty.c
---- /tmp/qemu-6.2.0/util/qemu-openpty.c
-+++ ./util/qemu-openpty.c
-@@ -111,6 +111,9 @@
+@@ -2073,7 +2121,7 @@
+ {
+     /* if the user specifies a keyboard layout, always use it */
+     if (keyboard_layout) {
+-        key_event(vs, down, sym);
++    	key_event(vs, down, sym);
+     } else {
+         trace_vnc_key_event_ext(down, sym, keycode, code2name(keycode));
+         do_key_event(vs, down, keycode, sym);
+diff -ru --no-dereference qemu-orig/util/qemu-openpty.c qemu/util/qemu-openpty.c
+--- qemu-orig/util/qemu-openpty.c	2026-06-19 18:48:29.275344100 +0800
++++ qemu/util/qemu-openpty.c	2026-06-19 18:49:14.483792400 +0800
+@@ -110,6 +110,9 @@
  }
  #endif
  
@@ -354,7 +388,7 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/util/qemu-openpty.c ./util/qemu-openpt
  int qemu_openpty_raw(int *aslave, char *pty_name)
  {
      int amaster;
-@@ -138,3 +141,4 @@
+@@ -137,3 +140,4 @@
  
      return amaster;
  }

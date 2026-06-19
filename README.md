@@ -1,13 +1,7 @@
 # Limbo Emulator (QEMU) for Android
-#
-# For APK Downloads, Guides, and Help visit:
-# https://virtualmachinery.weebly.com
 
-Limbo is a QEMU-based emulator for Android supports emulation for these architectures:
+Limbo是一款基于QEMU的Android模拟器，支持模拟：
 	x86/x86_64
 	ARM/ARM64
-	PowerPC/PowerPC64
-	Sparc
 
-For developers read file README.developers for instructions on how to compile on your own
-	and other useful information.
+开发者请参阅 Developers.md 获取自行编译的说明及其他信息。
