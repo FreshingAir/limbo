@@ -43,7 +43,7 @@ jobs:
           #Note: if some of these file links don't download with wget use your browser to download them
           
           ##### Get QEMU
-          git clone --branch v5.1.0 --depth 1 https://github.com/qemu/qemu.git /tmp/qemu
+          git clone --branch 3.4.10 --depth 1 https://github.com/qemu/qemu.git /tmp/qemu
           mv /tmp/qemu qemu
                 
           cd qemu
