@@ -174,7 +174,7 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/include/ui/console.h ./include/ui/cons
  enum qemu_color_names {
 diff -ru --no-dereference /tmp/qemu-6.2.0/meson.build ./meson.build
 --- /tmp/qemu-6.2.0/meson.build	2026-06-19 18:48:26.042694000 +0800
-+++ ./meson.build	2026-06-19 23:41:24.402594200 +0800
++++ ./meson.build	2026-06-20 01:06:52.768955900 +0800
 @@ -410,12 +410,6 @@
    lttng = dependency('lttng-ust', required: true, method: 'pkg-config',
                       kwargs: static_kwargs)
@@ -214,15 +214,16 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/meson.build ./meson.build
  rbd = not_found
  if not get_option('rbd').auto() or have_block
    librados = cc.find_library('rados', required: get_option('rbd'),
-@@ -1310,7 +1285,6 @@
+@@ -1310,7 +1285,7 @@
      'jack': jack.found(),
      'oss': oss.found(),
      'pa': pulse.found(),
 -    'sdl': sdl.found(),
++    'sdl': true,
    }
    foreach k, v: audio_drivers_available
      config_host_data.set('CONFIG_AUDIO_' + k.to_upper(), v)
-@@ -1455,8 +1429,8 @@
+@@ -1455,8 +1430,8 @@
  config_host_data.set('CONFIG_LINUX_IO_URING', linux_io_uring.found())
  config_host_data.set('CONFIG_LIBPMEM', libpmem.found())
  config_host_data.set('CONFIG_RBD', rbd.found())
@@ -233,7 +234,7 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/meson.build ./meson.build
  config_host_data.set('CONFIG_SECCOMP', seccomp.found())
  config_host_data.set('CONFIG_SNAPPY', snappy.found())
  config_host_data.set('CONFIG_USB_LIBUSB', libusb.found())
-@@ -2527,7 +2501,7 @@
+@@ -2527,7 +2502,7 @@
  util_ss = util_ss.apply(config_all, strict: false)
  libqemuutil = static_library('qemuutil',
                               sources: util_ss.sources() + stub_ss.sources() + genh,
@@ -242,7 +243,7 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/meson.build ./meson.build
  qemuutil = declare_dependency(link_with: libqemuutil,
                                sources: genh + version_res)
  
-@@ -3364,10 +3338,7 @@
+@@ -3364,10 +3339,7 @@
  if targetos == 'darwin'
    summary_info += {'Cocoa support':   cocoa}
  endif
