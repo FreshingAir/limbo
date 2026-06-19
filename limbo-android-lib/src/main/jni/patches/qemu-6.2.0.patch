@@ -288,15 +288,24 @@ diff -ru --no-dereference qemu-orig/ui/console.c qemu/ui/console.c
      uint8_t bgcol:4;
 diff -ru --no-dereference qemu-orig/ui/meson.build qemu/ui/meson.build
 --- qemu-orig/ui/meson.build	2026-06-19 18:48:29.199175300 +0800
-+++ qemu/ui/meson.build	2026-06-20 01:22:32.284036400 +0800
-@@ -1,5 +1,4 @@
++++ qemu/ui/meson.build	2026-06-20 01:29:54.843955300 +0800
+@@ -1,6 +1,3 @@
 -softmmu_ss.add(pixman)
 -specific_ss.add(when: ['CONFIG_SOFTMMU'], if_true: pixman)   # for the include path
-+# specific_ss.add(when: ['CONFIG_SOFTMMU'], if_true: pixman)
- 
+-
  softmmu_ss.add(files(
    'clipboard.c',
-@@ -45,21 +44,21 @@
+   'console.c',
+@@ -35,7 +32,7 @@
+   'vnc-jobs.c',
+   'vnc-clipboard.c',
+ ))
+-vnc_ss.add(zlib, png, jpeg, gnutls)
++vnc_ss.add(png, jpeg, gnutls)
+ vnc_ss.add(when: sasl, if_true: files('vnc-auth-sasl.c'))
+ softmmu_ss.add_all(when: vnc, if_true: vnc_ss)
+ softmmu_ss.add(when: vnc, if_false: files('vnc-stubs.c'))
+@@ -45,21 +42,21 @@
  
  if curses.found()
    curses_ss = ss.source_set()
@@ -321,7 +330,7 @@ diff -ru --no-dereference qemu-orig/ui/meson.build qemu/ui/meson.build
                        if_true: files('egl-headless.c'))
    ui_modules += {'egl-headless' : egl_headless_ss}
  endif
-@@ -68,7 +67,7 @@
+@@ -68,18 +65,17 @@
    softmmu_ss.add(when: 'CONFIG_WIN32', if_true: files('win32-kbd-hook.c'))
  
    gtk_ss = ss.source_set()
@@ -330,16 +339,23 @@ diff -ru --no-dereference qemu-orig/ui/meson.build qemu/ui/meson.build
    gtk_ss.add(when: x11, if_true: files('x_keymap.c'))
    gtk_ss.add(when: [opengl, 'CONFIG_OPENGL'], if_true: files('gtk-gl-area.c'))
    gtk_ss.add(when: [x11, opengl, 'CONFIG_OPENGL'], if_true: files('gtk-egl.c'))
-@@ -79,7 +78,7 @@
+   ui_modules += {'gtk' : gtk_ss}
+ endif
+ 
+-if sdl.found()
    softmmu_ss.add(when: 'CONFIG_WIN32', if_true: files('win32-kbd-hook.c'))
  
    sdl_ss = ss.source_set()
 -  sdl_ss.add(sdl, sdl_image, pixman, glib, files(
-+  sdl_ss.add(sdl, sdl_image, glib, files(
++  sdl_ss.add(files(
      'sdl2-2d.c',
      'sdl2-input.c',
      'sdl2.c',
-@@ -91,7 +90,7 @@
+@@ -87,11 +83,10 @@
+   sdl_ss.add(when: [opengl, 'CONFIG_OPENGL'], if_true: files('sdl2-gl.c'))
+   sdl_ss.add(when: x11, if_true: files('x_keymap.c'))
+   ui_modules += {'sdl' : sdl_ss}
+-endif
  
  if spice.found()
    spice_core_ss = ss.source_set()
@@ -348,7 +364,7 @@ diff -ru --no-dereference qemu-orig/ui/meson.build qemu/ui/meson.build
      'spice-core.c',
      'spice-input.c',
      'spice-display.c'
-@@ -101,7 +100,7 @@
+@@ -101,7 +96,7 @@
  
  if spice.found() and config_host.has_key('CONFIG_GIO')
    spice_ss = ss.source_set()
