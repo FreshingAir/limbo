@@ -59,20 +59,20 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/audio/audio_legacy.c ./audio/audio_leg
  
 diff -ru --no-dereference /tmp/qemu-6.2.0/configure ./configure
 --- /tmp/qemu-6.2.0/configure	2026-06-19 18:48:23.596465100 +0800
-+++ ./configure	2026-06-19 22:14:53.689100800 +0800
++++ ./configure	2026-06-19 22:25:58.882152300 +0800
 @@ -1943,7 +1943,8 @@
  # pkg-config probe
- 
+
  if ! has "$pkg_config_exe"; then
 -  error_exit "pkg-config binary '$pkg_config_exe' not found"
 +  #error_exit "pkg-config binary '$pkg_config_exe' not found"
 +  echo Limbo: ignoring pkg-config
  fi
- 
+
  ##########################################
-@@ -2435,11 +2436,12 @@
+@@ -2435,7 +2436,8 @@
  # glib support probe
- 
+
  glib_req_ver=2.56
 -glib_modules=gthread-2.0
 +# Limbo: no need for gthread
@@ -80,11 +80,17 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/configure ./configure
  if test "$modules" = yes; then
      glib_modules="$glib_modules gmodule-export-2.0"
  elif test "$plugins" = "yes"; then
--    glib_modules="$glib_modules gmodule-no-export-2.0"
-+    glib_modules="$glib_modules gmodule-2.0"
- fi
- 
- for i in $glib_modules; do
+@@ -2446,8 +2448,8 @@
+     if $pkg_config --atleast-version=$glib_req_ver $i; then
+         glib_cflags=$($pkg_config --cflags $i)
+         glib_libs=$($pkg_config --libs $i)
+-    else
+-        error_exit "glib-$glib_req_ver $i is required to compile QEMU"
++    # else
++    #     error_exit "glib-$glib_req_ver $i is required to compile QEMU"
+     fi
+ done
+
 @@ -4033,6 +4035,8 @@
  else
      :> config-poison.h
