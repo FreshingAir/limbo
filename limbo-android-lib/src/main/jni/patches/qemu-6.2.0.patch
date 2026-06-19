@@ -62,17 +62,17 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/configure ./configure
 +++ ./configure	2026-06-19 22:25:58.882152300 +0800
 @@ -1943,7 +1943,8 @@
  # pkg-config probe
-
+ 
  if ! has "$pkg_config_exe"; then
 -  error_exit "pkg-config binary '$pkg_config_exe' not found"
 +  #error_exit "pkg-config binary '$pkg_config_exe' not found"
 +  echo Limbo: ignoring pkg-config
  fi
-
+ 
  ##########################################
 @@ -2435,7 +2436,8 @@
  # glib support probe
-
+ 
  glib_req_ver=2.56
 -glib_modules=gthread-2.0
 +# Limbo: no need for gthread
@@ -90,7 +90,7 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/configure ./configure
 +    #     error_exit "glib-$glib_req_ver $i is required to compile QEMU"
      fi
  done
-
+ 
 @@ -4033,6 +4035,8 @@
  else
      :> config-poison.h
@@ -172,6 +172,24 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/include/ui/console.h ./include/ui/cons
  
  /* Color number is match to standard vga palette */
  enum qemu_color_names {
+diff -ru --no-dereference /tmp/qemu-6.2.0/meson.build ./meson.build
+--- /tmp/qemu-6.2.0/meson.build	2026-06-19 18:48:26.042694000 +0800
++++ ./meson.build	2026-06-19 23:11:22.112352300 +0800
+@@ -410,10 +410,10 @@
+   lttng = dependency('lttng-ust', required: true, method: 'pkg-config',
+                      kwargs: static_kwargs)
+ endif
+-pixman = not_found
+-if have_system or have_tools
+-  pixman = dependency('pixman-1', required: have_system, version:'>=0.21.8',
+-                      method: 'pkg-config', kwargs: static_kwargs)
++# pixman = not_found
++# if have_system or have_tools
++#   pixman = dependency('pixman-1', required: have_system, version:'>=0.21.8',
++#                       method: 'pkg-config', kwargs: static_kwargs)
+ endif
+ zlib = dependency('zlib', required: true, kwargs: static_kwargs)
+ 
 diff -ru --no-dereference /tmp/qemu-6.2.0/monitor/misc.c ./monitor/misc.c
 --- /tmp/qemu-6.2.0/monitor/misc.c	2026-06-19 18:48:26.089563300 +0800
 +++ ./monitor/misc.c	2026-06-19 19:02:26.057703300 +0800
