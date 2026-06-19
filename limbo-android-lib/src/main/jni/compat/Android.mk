@@ -13,11 +13,13 @@ LOCAL_MODULE := compat-limbo
 
 LOCAL_C_INCLUDES :=			\
 	$(LOCAL_PATH)/.. \
-	$(LOCAL_PATH)/signals
-#	$(LOCAL_PATH)/../SDL/src \
-#	$(LOCAL_PATH)/../SDL/include
+	$(LOCAL_PATH)/signals \
+	$(NDK_ROOT)/sysroot/usr/include \
+    $(NDK_ROOT)/sysroot/usr/include/aarch64-linux-android
+
+LOCAL_LDLIBS += -lpthread
 
 LOCAL_CFLAGS += -include $(LOGUTILS)
+LOCAL_CFLAGS += -std=c99 -Wall
 LOCAL_ARM_MODE := $(ARM_MODE)
 include $(BUILD_SHARED_LIBRARY)
-
