@@ -39,13 +39,13 @@ public class VmUtils {
             System.loadLibrary("pixman-1");
 
             // 3. SDL 相关（按正确顺序）
-//            if (Config.enable_SDL) {
-//                if (Build.VERSION.SDK_INT >= 26) {
-//                    System.loadLibrary("compat-SDL2-addons");
-//                }
-//                System.loadLibrary("SDL2");
-//                System.loadLibrary("compat-SDL2-ext");
-//            }
+            if (Config.enable_SDL) {
+                if (Build.VERSION.SDK_INT >= 26) {
+                    System.loadLibrary("compat-SDL2-addons");
+                }
+                System.loadLibrary("SDL2");
+                System.loadLibrary("compat-SDL2-ext");
+            }
 
             // 4. Limbo 核心库
             System.loadLibrary("limbo");

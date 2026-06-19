@@ -1,3 +1,6 @@
-assets
-!assets/boot.bin
+assets/hdtemplates
+assets/roms
+assets/CHANGELOG
+assets/LICENSE
+assets/QEMU_VERSION
 jniLibs

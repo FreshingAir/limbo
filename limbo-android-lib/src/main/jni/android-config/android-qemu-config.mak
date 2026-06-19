@@ -158,6 +158,9 @@ else
 	KVM = --disable-kvm
 endif
 
+#DOCS
+DOCS = --disable-docs
+
 #XEN
 XEN = --disable-xen --disable-xen-pci-passthrough
 
@@ -207,6 +210,7 @@ config:
 	--cc=$(CC) \
 	--target-list=$(QEMU_TARGET_LIST) \
 	--cpu=$(QEMU_HOST_CPU) \
+	$(DOCS) \
 	$(PIXMAN) \
 	$(FDT) \
 	$(VNC) \
@@ -247,7 +251,7 @@ config:
 	-I$(LIMBO_JNI_ROOT)/pixman \
 	-I$(LIMBO_JNI_ROOT)/pixman/pixman \
 	-I$(LIMBO_JNI_ROOT)/scsi \
-	-I$(LIMBO_JNI_ROOT)/SDL3/include  \
+	-I$(LIMBO_JNI_ROOT)/SDL2/include  \
 	-I$(LIMBO_JNI_ROOT)/compat  \
 	$(SPICE_INC) \
 	$(FDT_INC) \

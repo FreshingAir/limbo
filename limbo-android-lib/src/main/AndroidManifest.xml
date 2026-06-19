@@ -23,6 +23,26 @@
 
     <application>
         <activity
+            android:name="org.libsdl.app.SDLActivity"
+            android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|screenLayout|fontScale|uiMode|orientation|screenSize|smallestScreenSize"
+            android:allowBackup="true"
+            android:hardwareAccelerated="true"
+            android:largeHeap="true"
+            android:requestLegacyExternalStorage="true"
+            android:icon="@drawable/limbo"
+            android:launchMode="singleTask"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
+        <activity
+            android:name="com.max2idea.android.limbo.main.LimboSDLActivity"
+            android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|screenLayout|fontScale|uiMode|orientation|screenSize|smallestScreenSize"
+            android:allowBackup="true"
+            android:hardwareAccelerated="true"
+            android:largeHeap="true"
+            android:requestLegacyExternalStorage="true"
+            android:icon="@drawable/limbo"
+            android:launchMode="singleTask"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
+        <activity
             android:name="com.max2idea.android.limbo.main.LimboSettingsManager"
             android:allowBackup="true"
             android:hardwareAccelerated="true"

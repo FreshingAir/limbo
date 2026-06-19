@@ -2,10 +2,13 @@ package com.example.limbo;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -20,6 +23,7 @@ import com.hjq.permissions.XXPermissions;
 import com.hjq.permissions.permission.PermissionLists;
 import com.max2idea.android.limbo.VmUtils;
 import com.max2idea.android.limbo.main.LimboApplication;
+import com.max2idea.android.limbo.main.LimboSDLActivity;
 
 import org.libsdl.app.SDLActivity;
 
@@ -37,19 +41,13 @@ import java.util.regex.Pattern;
 public class ExampleActivity extends AppCompatActivity {
     private EditText extraArgs;
 
-    private static native void hello();
-    static {
-        System.loadLibrary("example");
-        hello();
-    }
-
     @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        new AlertDialog.Builder(this)
+        AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle(R.string.agreement_confirm)
                 .setMessage(readAssetText(this, "LICENSE"))
                 .setPositiveButton(R.string.agreement_accept, (dialog2, which) -> dialog2.dismiss())
@@ -62,7 +60,6 @@ public class ExampleActivity extends AppCompatActivity {
             Toast.makeText(this, R.string.file_load_failed, Toast.LENGTH_SHORT).show();
         }
         extraArgs.setText("libqemu-system-x86_64.so\n" +
-                "-display sdl\n" +
                 "-monitor none\n" +
                 "-serial none\n" +
                 "-parallel none\n" +
@@ -115,7 +112,7 @@ public class ExampleActivity extends AppCompatActivity {
 
             VmUtils.init();
 
-            Intent intent = new Intent(this, SDLActivity.class);
+            Intent intent = new Intent(this, LimboSDLActivity.class);
             startActivity(intent);
 
             new Thread(() -> {

@@ -10,6 +10,7 @@ android {
             minorApiLevel = 1
         }
     }
+
     defaultConfig {
         applicationId "com.example.limbo"
         minSdk 23
@@ -22,10 +23,6 @@ android {
             //noinspection ChromeOsAbiSupport
             abiFilters 'arm64-v8a'
         }
-
-        externalNativeBuild { cmake { abiFilters "arm64-v8a"
-            cppFlags ''
-        } }
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -46,24 +43,17 @@ android {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
     }
-    buildFeatures {
-        prefab true
-    }
-    externalNativeBuild {
-        cmake {
-            path file('src/main/cpp/CMakeLists.txt')
-            version '3.22.1'
-        }
-    }
 }
 
 dependencies {
     implementation libs.androidx.appcompat
+    // implementation libs.material
     testImplementation libs.junit
     androidTestImplementation libs.androidx.espresso.core
     androidTestImplementation libs.androidx.junit
     implementation project(':limbo-android-lib')
-    implementation files("./libs/SDL3-3.5.0.aar")
+    // 设备兼容框架：https://github.com/getActivity/DeviceCompat
     implementation libs.devicecompat
+    // 权限请求框架：https://github.com/getActivity/XXPermissions
     implementation libs.xxpermissions
 }

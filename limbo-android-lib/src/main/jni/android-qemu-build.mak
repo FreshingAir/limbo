@@ -5,7 +5,7 @@
 include ../../android-config/android-qemu-config.mak
 
 ifeq ($(USE_SDL),true)
-sdllibs=../../../obj/local/$(APP_ABI)/libSDL3.so
+sdllibs=../../../obj/local/$(APP_ABI)/libSDL2.so
 endif
 
 glibs=-lglib-2.0

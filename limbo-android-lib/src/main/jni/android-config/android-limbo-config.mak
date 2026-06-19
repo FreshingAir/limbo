@@ -44,7 +44,7 @@ BUILD_THREADS ?= 3
 BUILD_HOST?=arm64-v8a
 
 # GUEST_ARCH is the Emulator type
-# values: x86_64-softmmu,aarch64-softmmu,sparc64-softmmu,ppc64-softmmu
+# values: x86_64-softmmu,aarch64-softmmu
 BUILD_GUEST?=x86_64-softmmu
 
 # QEMU Version

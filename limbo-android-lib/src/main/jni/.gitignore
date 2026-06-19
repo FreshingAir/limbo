@@ -24,4 +24,4 @@ qemu-2.11.0
 /glib
 /libffi
 /pixman
-/SDL3
+/SDL2

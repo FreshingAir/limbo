@@ -13,8 +13,11 @@ LOCAL_MODULE := compat-limbo
 
 LOCAL_C_INCLUDES :=			\
 	$(LOCAL_PATH)/.. \
-	$(LOCAL_PATH)/signals
+	$(LOCAL_PATH)/signals \
+	$(LOCAL_PATH)/../SDL/src \
+	$(LOCAL_PATH)/../SDL/include
 
 LOCAL_CFLAGS += -include $(LOGUTILS)
 LOCAL_ARM_MODE := $(ARM_MODE)
 include $(BUILD_SHARED_LIBRARY)
+
