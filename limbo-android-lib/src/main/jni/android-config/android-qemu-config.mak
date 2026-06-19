@@ -7,6 +7,8 @@ ifeq ($(USE_QEMU_VERSION),2.9.1)
 include $(QEMU_CONFIG_DIR)/android-qemu-config-2.9.1.mak
 else ifeq ($(USE_QEMU_VERSION),5.1.0)
 include $(QEMU_CONFIG_DIR)/android-qemu-config-5.1.0.mak
+else ifeq ($(USE_QEMU_VERSION),6.2.0)
+include $(QEMU_CONFIG_DIR)/android-qemu-config-6.2.0.mak
 else
 $(error Unsupported QEMU version = $(USE_QEMU_VERSION))
 endif
