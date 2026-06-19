@@ -174,8 +174,8 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/include/ui/console.h ./include/ui/cons
  enum qemu_color_names {
 diff -ru --no-dereference /tmp/qemu-6.2.0/meson.build ./meson.build
 --- /tmp/qemu-6.2.0/meson.build	2026-06-19 18:48:26.042694000 +0800
-+++ ./meson.build	2026-06-19 23:16:15.658867200 +0800
-@@ -410,11 +410,11 @@
++++ ./meson.build	2026-06-19 23:23:24.808952300 +0800
+@@ -410,12 +410,12 @@
    lttng = dependency('lttng-ust', required: true, method: 'pkg-config',
                       kwargs: static_kwargs)
  endif
@@ -184,14 +184,16 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/meson.build ./meson.build
 -  pixman = dependency('pixman-1', required: have_system, version:'>=0.21.8',
 -                      method: 'pkg-config', kwargs: static_kwargs)
 -endif
+-zlib = dependency('zlib', required: true, kwargs: static_kwargs)
 +# pixman = not_found
 +# if have_system or have_tools
 +#   pixman = dependency('pixman-1', required: have_system, version:'>=0.21.8',
 +#                       method: 'pkg-config', kwargs: static_kwargs)
 +# endif
- zlib = dependency('zlib', required: true, kwargs: static_kwargs)
++# zlib = dependency('zlib', required: true, kwargs: static_kwargs)
  
  libaio = not_found
+ if not get_option('linux_aio').auto() or have_block
 diff -ru --no-dereference /tmp/qemu-6.2.0/monitor/misc.c ./monitor/misc.c
 --- /tmp/qemu-6.2.0/monitor/misc.c	2026-06-19 18:48:26.089563300 +0800
 +++ ./monitor/misc.c	2026-06-19 19:02:26.057703300 +0800
