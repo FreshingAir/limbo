@@ -5,8 +5,8 @@
 # Last version with gcc support is 14b 
 #NDK_ROOT = /home/dev/tools/ndk/android-ndk-r14b
 #USE_GCC?=true
-# Or use r28 with clang
-NDK_ROOT ?= /home/dev/tools/ndk/android-ndk-r28b
+# Or use r23 with clang 
+NDK_ROOT ?= /home/dev/tools/ndk/android-ndk-r23b
 USE_GCC?=false
 
 ### the ndk api should be the same as the minSdkVersion in your AndroidManifest.xml 
@@ -44,12 +44,18 @@ BUILD_THREADS ?= 3
 BUILD_HOST?=arm64-v8a
 
 # GUEST_ARCH is the Emulator type
-# values: x86_64-softmmu,aarch64-softmmu
+# values: x86_64-softmmu,aarch64-softmmu,sparc64-softmmu,ppc64-softmmu
 BUILD_GUEST?=x86_64-softmmu
 
 # QEMU Version
 # values: 2.9.1, 5.1.0
 USE_QEMU_VERSION ?= 5.1.0
+
+# If you want to use SDL interface
+USE_SDL ?= true
+
+# If you want to use SDL Audio with Android AudioTrack
+USE_SDL_AUDIO ?= true
 
 # if you want to use Android AAudio, it needs version platform API 26
 USE_AAUDIO ?= true

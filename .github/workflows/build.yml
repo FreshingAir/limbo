@@ -39,11 +39,6 @@ jobs:
           #Make sure you're under the jni directory
           cd ./limbo-android-lib/src/main/jni
           
-          if [ -d "qemu" ] && [ -d "glib" ] && [ -d "libffi" ] && [ -d "pixman" ] && [ -d "SDL2" ]; then
-            echo "✅ 依赖库已从缓存恢复，跳过下载"
-            exit 0
-          fi
-          
           # Now download the source code for the external libraries and unzip them under the jni directory
           #Note: if some of these file links don't download with wget use your browser to download them
           
@@ -74,6 +69,8 @@ jobs:
           tar -xzf /tmp/pixman-0.40.0.tar.gz
           mv pixman-0.40.0 pixman
 
+          git clone --branch v5.1.0 --depth 1 https:///github.com/qemu/qemu.git /tmp/SDL3
+          mv /tmp/SDL3 SDL3
       - name: 上传补丁冲突文件（patch失败专用）
         if: failure()
         uses: actions/upload-artifact@v7.0.1

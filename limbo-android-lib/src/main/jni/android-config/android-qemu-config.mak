@@ -29,6 +29,10 @@ COROUTINE_POOL = --enable-coroutine-pool
 ifeq ($(USE_SDL),true)
 	#ENABLE SDL
 	SDL = --enable-sdl
+	ifeq ($(USE_SDL_ABI),true)
+		#SDL += --with-sdlabi=1.2
+		SDL += --with-sdlabi=2.0
+	endif
 else 
 	# DISABLE
 	SDL = --disable-sdl
@@ -154,9 +158,6 @@ else
 	KVM = --disable-kvm
 endif
 
-#DOCS
-DOCS = --disable-docs
-
 #XEN
 XEN = --disable-xen --disable-xen-pci-passthrough
 
@@ -206,7 +207,6 @@ config:
 	--cc=$(CC) \
 	--target-list=$(QEMU_TARGET_LIST) \
 	--cpu=$(QEMU_HOST_CPU) \
-	$(DOCS) \
 	$(PIXMAN) \
 	$(FDT) \
 	$(VNC) \
@@ -247,6 +247,7 @@ config:
 	-I$(LIMBO_JNI_ROOT)/pixman \
 	-I$(LIMBO_JNI_ROOT)/pixman/pixman \
 	-I$(LIMBO_JNI_ROOT)/scsi \
+	-I$(LIMBO_JNI_ROOT)/SDL3/include  \
 	-I$(LIMBO_JNI_ROOT)/compat  \
 	$(SPICE_INC) \
 	$(FDT_INC) \
@@ -259,3 +260,4 @@ config:
 	--with-coroutine=$(COROUTINE) \
 	$(DEBUG) \
 	$(CONFIG_PROFILER)
+

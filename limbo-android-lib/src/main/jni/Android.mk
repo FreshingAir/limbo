@@ -4,6 +4,9 @@
 include $(NDK_PROJECT_PATH)/jni/compat/musl/Android.mk
 include $(NDK_PROJECT_PATH)/jni/compat/Android.mk
 
+ifeq ($(USE_SDL),true)
+	include $(NDK_PROJECT_PATH)/jni/SDL3/Android.mk
+endif
 include $(NDK_PROJECT_PATH)/jni/limbo/Android.mk
 
 #Optional libs
