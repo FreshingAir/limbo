@@ -34,20 +34,6 @@ jobs:
           sudo apt-get install make autoconf automake git binutils python3 \
             libtool-bin pkg-config flex bison gettext texinfo rsync \
             gtk-doc-tools
-      # ================= 缓存 1：Make =================
-      - name: 缓存依赖库
-        uses: actions/cache@v4
-        id: dep-cache
-        with:
-          path: |
-            ./limbo-android-lib/src/main/jni/qemu
-            ./limbo-android-lib/src/main/jni/glib
-            ./limbo-android-lib/src/main/jni/libffi
-            ./limbo-android-lib/src/main/jni/pixman
-            ./limbo-android-lib/src/main/jni/SDL2
-          key: ${{ runner.os }}-limbo-deps-${{ hashFiles('**/jni/**') }}
-          restore-keys: |
-            ${{ runner.os }}-limbo-deps-
       - name: 克隆代码
         run: |
           #Make sure you're under the jni directory
@@ -96,6 +82,15 @@ jobs:
           cd SDL2
           patch -p1 < ../patches/sdl2-2.0.8.patch
 
+      - name: 上传补丁冲突文件（patch失败专用）
+        if: failure()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: patch_conflict_rej_orig
+          path: |
+            ./limbo-android-lib/src/main/jni/**/*.rej
+            ./limbo-android-lib/src/main/jni/**/*.orig
+
       - name: Build QEMU
         run: |
           cd limbo-android-lib/src/main/jni
@@ -103,16 +98,6 @@ jobs:
           export PATH=$PATH:$NDK_ROOT
           export BUILD_GUEST=${{ github.event.inputs.build_guest || 'x86_64-softmmu,aarch64-softmmu' }}
           make limbo
-      # ================= 缓存 2：Gradle =================
-      - name: 缓存 Gradle 构建
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
       - name: Build with Gradle
         run: |
           chmod +x ./gradlew
