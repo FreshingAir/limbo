@@ -174,7 +174,7 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/include/ui/console.h ./include/ui/cons
  enum qemu_color_names {
 diff -ru --no-dereference /tmp/qemu-6.2.0/meson.build ./meson.build
 --- /tmp/qemu-6.2.0/meson.build	2026-06-19 18:48:26.042694000 +0800
-+++ ./meson.build	2026-06-19 23:23:24.808952300 +0800
++++ ./meson.build	2026-06-19 23:30:01.895626600 +0800
 @@ -410,12 +410,12 @@
    lttng = dependency('lttng-ust', required: true, method: 'pkg-config',
                       kwargs: static_kwargs)
@@ -191,9 +191,52 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/meson.build ./meson.build
 +#                       method: 'pkg-config', kwargs: static_kwargs)
 +# endif
 +# zlib = dependency('zlib', required: true, kwargs: static_kwargs)
- 
+
  libaio = not_found
  if not get_option('linux_aio').auto() or have_block
+@@ -791,24 +791,24 @@
+   endif
+ endif
+ 
+-sdl = not_found
+-if not get_option('sdl').auto() or (have_system and not cocoa.found())
+-  sdl = dependency('sdl2', required: get_option('sdl'), kwargs: static_kwargs)
+-  sdl_image = not_found
+-endif
+-if sdl.found()
+-  # work around 2.0.8 bug
+-  sdl = declare_dependency(compile_args: '-Wno-undef',
+-                           dependencies: sdl)
+-  sdl_image = dependency('SDL2_image', required: get_option('sdl_image'),
+-                         method: 'pkg-config', kwargs: static_kwargs)
+-else
+-  if get_option('sdl_image').enabled()
+-    error('sdl-image required, but SDL was @0@'.format(
+-          get_option('sdl').disabled() ? 'disabled' : 'not found'))
+-  endif
+-  sdl_image = not_found
+-endif
++# sdl = not_found
++# if not get_option('sdl').auto() or (have_system and not cocoa.found())
++#   sdl = dependency('sdl2', required: get_option('sdl'), kwargs: static_kwargs)
++#   sdl_image = not_found
++# endif
++# if sdl.found()
++#   # work around 2.0.8 bug
++#   sdl = declare_dependency(compile_args: '-Wno-undef',
++#                            dependencies: sdl)
++#   sdl_image = dependency('SDL2_image', required: get_option('sdl_image'),
++#                          method: 'pkg-config', kwargs: static_kwargs)
++# else
++#   if get_option('sdl_image').enabled()
++#     error('sdl-image required, but SDL was @0@'.format(
++#           get_option('sdl').disabled() ? 'disabled' : 'not found'))
++#   endif
++#   sdl_image = not_found
++# endif
+ 
+ rbd = not_found
+ if not get_option('rbd').auto() or have_block
 diff -ru --no-dereference /tmp/qemu-6.2.0/monitor/misc.c ./monitor/misc.c
 --- /tmp/qemu-6.2.0/monitor/misc.c	2026-06-19 18:48:26.089563300 +0800
 +++ ./monitor/misc.c	2026-06-19 19:02:26.057703300 +0800
