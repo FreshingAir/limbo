@@ -1,3 +1,10 @@
+Binary files /tmp/qemu-6.2.0/.git/index and ./.git/index differ
+diff -ru --no-dereference /tmp/qemu-6.2.0/.git/logs/HEAD ./.git/logs/HEAD
+--- /tmp/qemu-6.2.0/.git/logs/HEAD	2026-06-19 18:48:23.235615000 +0800
++++ ./.git/logs/HEAD	2026-06-19 18:48:04.057479400 +0800
+@@ -1 +1 @@
+-0000000000000000000000000000000000000000 44f28df24767cf9dca1ddc9b23157737c4cbb645 RefreshingScraps <hzy2648@outlook.com> 1781866103 +0800	clone: from https://github.com/qemu/qemu.git
++0000000000000000000000000000000000000000 44f28df24767cf9dca1ddc9b23157737c4cbb645 RefreshingScraps <hzy2648@outlook.com> 1781866084 +0800	clone: from https://github.com/qemu/qemu.git
 diff -ru --no-dereference /tmp/qemu-6.2.0/Makefile ./Makefile
 --- /tmp/qemu-6.2.0/Makefile	2026-06-19 18:48:23.295128400 +0800
 +++ ./Makefile	2026-06-19 18:49:13.215891000 +0800
@@ -286,6 +293,77 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/ui/console.c ./ui/console.c
  typedef struct TextAttributes {
      uint8_t fgcol:4;
      uint8_t bgcol:4;
+diff -ru --no-dereference /tmp/qemu-6.2.0/ui/meson.build ./ui/meson.build
+--- /tmp/qemu-6.2.0/ui/meson.build	2026-06-19 18:48:29.199175300 +0800
++++ ./ui/meson.build	2026-06-20 01:16:41.360814100 +0800
+@@ -1,5 +1,4 @@
+-softmmu_ss.add(pixman)
+-specific_ss.add(when: ['CONFIG_SOFTMMU'], if_true: pixman)   # for the include path
++specific_ss.add(when: ['CONFIG_SOFTMMU'], if_true: pixman)
+ 
+ softmmu_ss.add(files(
+   'clipboard.c',
+@@ -45,21 +44,21 @@
+ 
+ if curses.found()
+   curses_ss = ss.source_set()
+-  curses_ss.add(when: [curses, iconv], if_true: [files('curses.c'), pixman])
++  curses_ss.add(when: [curses, iconv], if_true: files('curses.c'))
+   ui_modules += {'curses' : curses_ss}
+ endif
+ 
+ if config_host.has_key('CONFIG_OPENGL')
+   opengl_ss = ss.source_set()
+   opengl_ss.add(gbm)
+-  opengl_ss.add(when: [opengl, pixman, 'CONFIG_OPENGL'],
++  opengl_ss.add(when: [opengl, 'CONFIG_OPENGL'],
+                if_true: files('shader.c', 'console-gl.c', 'egl-helpers.c', 'egl-context.c'))
+   ui_modules += {'opengl' : opengl_ss}
+ endif
+ 
+ if config_host.has_key('CONFIG_OPENGL') and gbm.found()
+   egl_headless_ss = ss.source_set()
+-  egl_headless_ss.add(when: [opengl, gbm, pixman, 'CONFIG_OPENGL'],
++  egl_headless_ss.add(when: [opengl, gbm, 'CONFIG_OPENGL'],
+                       if_true: files('egl-headless.c'))
+   ui_modules += {'egl-headless' : egl_headless_ss}
+ endif
+@@ -68,7 +67,7 @@
+   softmmu_ss.add(when: 'CONFIG_WIN32', if_true: files('win32-kbd-hook.c'))
+ 
+   gtk_ss = ss.source_set()
+-  gtk_ss.add(gtk, vte, pixman, files('gtk.c', 'gtk-clipboard.c'))
++  gtk_ss.add(gtk, vte, files('gtk.c', 'gtk-clipboard.c'))
+   gtk_ss.add(when: x11, if_true: files('x_keymap.c'))
+   gtk_ss.add(when: [opengl, 'CONFIG_OPENGL'], if_true: files('gtk-gl-area.c'))
+   gtk_ss.add(when: [x11, opengl, 'CONFIG_OPENGL'], if_true: files('gtk-egl.c'))
+@@ -79,7 +78,7 @@
+   softmmu_ss.add(when: 'CONFIG_WIN32', if_true: files('win32-kbd-hook.c'))
+ 
+   sdl_ss = ss.source_set()
+-  sdl_ss.add(sdl, sdl_image, pixman, glib, files(
++  sdl_ss.add(sdl, sdl_image, glib, files(
+     'sdl2-2d.c',
+     'sdl2-input.c',
+     'sdl2.c',
+@@ -91,7 +90,7 @@
+ 
+ if spice.found()
+   spice_core_ss = ss.source_set()
+-  spice_core_ss.add(spice, pixman, files(
++  spice_core_ss.add(spice, files(
+     'spice-core.c',
+     'spice-input.c',
+     'spice-display.c'
+@@ -101,7 +100,7 @@
+ 
+ if spice.found() and config_host.has_key('CONFIG_GIO')
+   spice_ss = ss.source_set()
+-  spice_ss.add(spice, gio, pixman, files('spice-app.c'))
++  spice_ss.add(spice, gio, files('spice-app.c'))
+   ui_modules += {'spice-app': spice_ss}
+ endif
+ 
 diff -ru --no-dereference /tmp/qemu-6.2.0/ui/sdl2-2d.c ./ui/sdl2-2d.c
 --- /tmp/qemu-6.2.0/ui/sdl2-2d.c	2026-06-19 18:48:29.201129000 +0800
 +++ ./ui/sdl2-2d.c	2026-06-19 18:49:13.915936900 +0800
