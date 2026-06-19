@@ -47,7 +47,7 @@ jobs:
           mv /tmp/qemu qemu
                 
           cd qemu
-          patch -p1 < ../patches/qemu-5.1.0.patch
+          patch -p1 < ../patches/qemu-6.2.0.patch
           cd ..
           
           ##### GET glib
