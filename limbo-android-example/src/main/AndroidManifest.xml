@@ -10,6 +10,16 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Freshingairlimbo"
         android:requestLegacyExternalStorage="true" >
+        <activity
+            android:name="org.libsdl.app.SDLActivity"
+            android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|screenLayout|fontScale|uiMode|orientation|screenSize|smallestScreenSize"
+            android:allowBackup="true"
+            android:hardwareAccelerated="true"
+            android:largeHeap="true"
+            android:requestLegacyExternalStorage="true"
+            android:icon="@drawable/limbo"
+            android:launchMode="singleTask"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity android:name=".ExampleActivity"
             android:exported="true"
             android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">

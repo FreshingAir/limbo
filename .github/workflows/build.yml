@@ -27,7 +27,7 @@ jobs:
       - name: Setup Android SDK Tools
         uses: android-actions/setup-android@v3.2.1
         with:
-          packages: 'ndk;23.1.7779620'
+          packages: 'ndk;28.2.13676358'
 
       - name: 安装依赖
         run: |
@@ -73,14 +73,7 @@ jobs:
           wget --quiet https://www.cairographics.org/releases/pixman-0.40.0.tar.gz -P /tmp/
           tar -xzf /tmp/pixman-0.40.0.tar.gz
           mv pixman-0.40.0 pixman
-          
-          ##### GET SDL2
-          # wget --quiet https://www.libsdl.org/release/SDL2-2.0.8.tar.gz -P /tmp/
-          # tar -xzf /tmp/SDL2-2.0.8.tar.gz
-          # mv SDL2-2.0.8 SDL2
 
-          # cd SDL2
-          # patch -p1 < ../patches/sdl2-2.0.8.patch
       - name: 上传补丁冲突文件（patch失败专用）
         if: failure()
         uses: actions/upload-artifact@v7.0.1
@@ -92,7 +85,7 @@ jobs:
       - name: Build QEMU
         run: |
           cd limbo-android-lib/src/main/jni
-          export NDK_ROOT=${ANDROID_SDK_ROOT}/ndk/23.1.7779620
+          export NDK_ROOT=${ANDROID_SDK_ROOT}/ndk/28.2.13676358
           export PATH=$PATH:$NDK_ROOT
           export BUILD_GUEST=${{ github.event.inputs.build_guest || 'x86_64-softmmu,aarch64-softmmu' }}
           make limbo

@@ -5,8 +5,8 @@
 # Last version with gcc support is 14b 
 #NDK_ROOT = /home/dev/tools/ndk/android-ndk-r14b
 #USE_GCC?=true
-# Or use r23 with clang 
-NDK_ROOT ?= /home/dev/tools/ndk/android-ndk-r23b
+# Or use r28 with clang
+NDK_ROOT ?= /home/dev/tools/ndk/android-ndk-r28b
 USE_GCC?=false
 
 ### the ndk api should be the same as the minSdkVersion in your AndroidManifest.xml 
