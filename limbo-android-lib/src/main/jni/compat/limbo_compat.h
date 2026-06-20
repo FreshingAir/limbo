@@ -15,8 +15,9 @@ void set_jni(JNIEnv* env, jobject obj1, jclass jclass1, const char * storage_dir
 void * valloc (size_t size);
 
 #ifndef __ANDROID_HAVE_STRCHRNUL__
+#if !defined(__ANDROID_API__) || __ANDROID_API__ < 24
 const char* strchrnul(const char* s, int c);
 #endif
-
+#endif
 
 #endif

@@ -2,15 +2,26 @@
 QEMU_TARGET_LIST = $(BUILD_GUEST)
 QEMU_CONFIG_DIR=$(LIMBO_JNI_ROOT)/android-config
 
-
 ifeq ($(USE_QEMU_VERSION),2.9.1)
-include $(QEMU_CONFIG_DIR)/android-qemu-config-2.9.1.mak
+    include $(QEMU_CONFIG_DIR)/android-qemu-config-2.9.1.mak
+    CROSS_PREFIX = --cross-prefix=$(TOOLCHAIN_PREFIX)-
 else ifeq ($(USE_QEMU_VERSION),5.1.0)
-include $(QEMU_CONFIG_DIR)/android-qemu-config-5.1.0.mak
+    include $(QEMU_CONFIG_DIR)/android-qemu-config-5.1.0.mak
+    CROSS_PREFIX = --cross-prefix=$(TOOLCHAIN_PREFIX)-
 else ifeq ($(USE_QEMU_VERSION),6.2.0)
-include $(QEMU_CONFIG_DIR)/android-qemu-config-6.2.0.mak
+    include $(QEMU_CONFIG_DIR)/android-qemu-config-6.2.0.mak
+
+    LLVM_BIN=$(NDK_ROOT)/toolchains/llvm/prebuilt/linux-x86_64/bin
+    LLVM_TOOLCHAIN += CC=$(LLVM_BIN)/clang
+    LLVM_TOOLCHAIN += CXX=$(LLVM_BIN)/clang++
+    LLVM_TOOLCHAIN += NM=$(LLVM_BIN)/llvm-nm
+    LLVM_TOOLCHAIN += AR=$(LLVM_BIN)/llvm-ar
+    LLVM_TOOLCHAIN += RANLIB=$(LLVM_BIN)/llvm-ranlib
+    LLVM_TOOLCHAIN += STRIP=$(LLVM_BIN)/llvm-strip
+    CROSS_PREFIX =
+
 else
-$(error Unsupported QEMU version = $(USE_QEMU_VERSION))
+    $(error Unsupported QEMU version = $(USE_QEMU_VERSION))
 endif
 
 ##### QEMU generic configuration
@@ -22,8 +33,8 @@ endif
 COROUTINE=sigaltstack
 #COROUTINE=gthread
 
-#COROUTINE_POOL=--disable-coroutine-pool 
-COROUTINE_POOL = --enable-coroutine-pool 
+#COROUTINE_POOL=--disable-coroutine-pool
+COROUTINE_POOL = --enable-coroutine-pool
 
 #Enable Internal profiler
 #CONFIG_PROFILER = --enable-gprof
@@ -35,7 +46,7 @@ ifeq ($(USE_SDL),true)
 		#SDL += --with-sdlabi=1.2
 		SDL += --with-sdlabi=2.0
 	endif
-else 
+else
 	# DISABLE
 	SDL = --disable-sdl
 endif
@@ -44,15 +55,15 @@ endif
 #SDL_RENDERING = -D__LIMBO_SDL_FORCE_SOFTWARE_RENDERING__
 
 # Or SDL Hardware Acceleration (faster though needs whole screen redraw)
-SDL_RENDERING = -D__LIMBO_SDL_FORCE_HARDWARE_RENDERING__ 
+SDL_RENDERING = -D__LIMBO_SDL_FORCE_HARDWARE_RENDERING__
 
 
-#ENABLE SOUND VIA SDL 
+#ENABLE SOUND VIA SDL
 # Note: Most guests can play wav files but it's still choppy
 
 ifeq ($(USE_SDL_AUDIO),true)
 	AUDIO += --audio-drv-list=sdl
-else 
+else
 	# DISABLE
 	AUDIO += --audio-drv-list=
 endif
@@ -70,12 +81,12 @@ USB_REDIR = --disable-usb-redir
 USB_LIB = --disable-libusb
 
 #NETWORK
-#NET = --enable-slirp 
+#NET = --enable-slirp
 
 #DISPLAY
 DISPLAY = --disable-curses --disable-cocoa --disable-gtk
 
-#VNC 
+#VNC
 VNC +=  --enable-vnc
 #VNC += --enable-vnc-jpeg
 VNC += --disable-vnc-jpeg
@@ -102,7 +113,7 @@ FDT =	--enable-fdt
 FDT_INC = -I$(LIMBO_JNI_ROOT)/qemu/dtc/libfdt
 
 #Disable nptl
-#NPTL += --disable-nptl 
+#NPTL += --disable-nptl
 
 #For 2.3.0
 #Misc
@@ -112,8 +123,8 @@ MISC += --disable-libnfs --disable-libiscsi --disable-docs
 MISC += --disable-rdma --disable-brlapi --disable-curl
 MISC += --disable-vde --disable-netmap --disable-cap-ng --disable-zlib-test
 MISC += --disable-attr --disable-guest-agent --disable-pie
-MISC += --disable-rbd --disable-xfsctl  --disable-lzo  --disable-snappy 
-MISC += --disable-seccomp --disable-bzip2 --disable-glusterfs 
+MISC += --disable-rbd --disable-xfsctl  --disable-lzo  --disable-snappy
+MISC += --disable-seccomp --disable-bzip2 --disable-glusterfs
 MISC += --disable-vte
 MISC += --disable-opengl
 MISC += --disable-blobs
@@ -155,7 +166,7 @@ endif
 ifeq ($(USE_KVM),true)
 	#ENABLE KVM
 	KVM = --enable-kvm
-else 
+else
 	# DISABLE
 	KVM = --disable-kvm
 endif
@@ -168,7 +179,7 @@ XEN = --disable-xen --disable-xen-pci-passthrough
 
 #SPICE
 SPICE = --disable-spice
-#SPICE = --enable-spice 
+#SPICE = --enable-spice
 #SPICE_INC= -I$(LIMBO_JNI_ROOT)/spice-protocol  \
 	-I$(LIMBO_JNI_ROOT)/spice/server
 
@@ -179,7 +190,7 @@ SPICE = --disable-spice
 WARNING_FLAGS = -Wno-redundant-decls -Wno-unused-variable \
 	-Wno-maybe-uninitialized -Wno-unused-function \
 	-Wunused-but-set-variable -Wno-unknown-warning-option
-	
+
 ifeq ($(APP_ABI), armeabi)
     QEMU_HOST_CPU = arm
 else ifeq ($(APP_ABI), armeabi-v7a)
@@ -204,12 +215,13 @@ QEMU_LDFLAGS=\
 
 config:
 	echo TOOLCHAIN DIR: $(TOOLCHAIN_DIR)
-	echo NDK ROOT: $(NDK_ROOT) 
-	echo NDK PLATFORM: $(NDK_PLATFORM) 
+	echo NDK ROOT: $(NDK_ROOT)
+	echo NDK PLATFORM: $(NDK_PLATFORM)
 	echo USR INCLUDE: $(NDK_INCLUDE)
 	cd ./qemu	; \
-	./configure \
+	$(LLVM_TOOLCHAIN) ./configure \
 	--cc=$(CC) \
+	--cxx=$(CXX) \
 	--target-list=$(QEMU_TARGET_LIST) \
 	--cpu=$(QEMU_HOST_CPU) \
 	$(DOCS) \
@@ -236,7 +248,7 @@ config:
 	$(AUDIO) \
 	$(COROUTINE_POOL) \
 	$(MISC) \
-	--cross-prefix=$(TOOLCHAIN_PREFIX)- \
+	$(CROSS_PREFIX) \
 	--extra-ldflags=\
 	" \
 	$(QEMU_LDFLAGS) \
@@ -245,6 +257,7 @@ config:
 	--extra-cflags=\
 	"\
 	$(SYSTEM_INCLUDE) \
+	-I$(LIMBO_JNI_ROOT)/qemu/include \
 	-I$(LIMBO_JNI_ROOT)/glib \
 	-I$(LIMBO_JNI_ROOT)/glib/glib \
 	-I$(LIMBO_JNI_ROOT)/glib/gmodule \
@@ -266,4 +279,3 @@ config:
 	--with-coroutine=$(COROUTINE) \
 	$(DEBUG) \
 	$(CONFIG_PROFILER)
-
