@@ -57,6 +57,29 @@ diff -ru --no-dereference qemu-orig/audio/audio_legacy.c qemu/audio/audio_legacy
      return (frames * 1000000 + freq / 2) / freq;
  }
  
+diff -ru --no-dereference qemu-orig/block/meson.build qemu/block/meson.build
+--- qemu-orig/block/meson.build	2026-06-19 18:48:23.411393900 +0800
++++ qemu/block/meson.build	2026-06-20 10:47:48.900736200 +0800
+@@ -41,7 +41,7 @@
+   'vmdk.c',
+   'vpc.c',
+   'write-threshold.c',
+-), zstd, zlib, gnutls)
++), zstd, gnutls)
+ 
+ softmmu_ss.add(when: 'CONFIG_TCG', if_true: files('blkreplay.c'))
+ 
+diff -ru --no-dereference qemu-orig/chardev/meson.build qemu/chardev/meson.build
+--- qemu-orig/chardev/meson.build	2026-06-19 18:48:23.514843100 +0800
++++ qemu/chardev/meson.build	2026-06-20 09:46:40.351042700 +0800
+@@ -31,7 +31,6 @@
+ 
+ if brlapi.found()
+   module_ss = ss.source_set()
+-  module_ss.add(when: [brlapi], if_true: [files('baum.c'), pixman])
+   chardev_modules += { 'baum': module_ss }
+ endif
+ 
 diff -ru --no-dereference qemu-orig/configure qemu/configure
 --- qemu-orig/configure	2026-06-19 18:48:23.596465100 +0800
 +++ qemu/configure	2026-06-19 22:25:58.882152300 +0800
@@ -100,6 +123,88 @@ diff -ru --no-dereference qemu-orig/configure qemu/configure
  
  # Save the configure command line for later reuse.
  cat <<EOD >config.status
+diff -ru --no-dereference qemu-orig/contrib/vhost-user-gpu/meson.build qemu/contrib/vhost-user-gpu/meson.build
+--- qemu-orig/contrib/vhost-user-gpu/meson.build	2026-06-19 18:48:23.631721300 +0800
++++ qemu/contrib/vhost-user-gpu/meson.build	2026-06-20 09:46:40.335423000 +0800
+@@ -1,7 +1,7 @@
+ if 'CONFIG_TOOLS' in config_host and virgl.found() and gbm.found() \
+-    and 'CONFIG_LINUX' in config_host and pixman.found()
++    and 'CONFIG_LINUX' in config_host
+   executable('vhost-user-gpu', files('vhost-user-gpu.c', 'virgl.c', 'vugbm.c'),
+-             dependencies: [qemuutil, pixman, gbm, virgl, vhost_user, opengl],
++             dependencies: [qemuutil, gbm, virgl, vhost_user, opengl],
+              install: true,
+              install_dir: get_option('libexecdir'))
+ 
+diff -ru --no-dereference qemu-orig/hw/display/meson.build qemu/hw/display/meson.build
+--- qemu-orig/hw/display/meson.build	2026-06-19 18:48:24.191120500 +0800
++++ qemu/hw/display/meson.build	2026-06-20 10:41:36.997724700 +0800
+@@ -40,8 +40,7 @@
+ 
+ if config_all_devices.has_key('CONFIG_QXL')
+   qxl_ss = ss.source_set()
+-  qxl_ss.add(when: 'CONFIG_QXL', if_true: [files('qxl.c', 'qxl-logger.c', 'qxl-render.c'),
+-                                           pixman, spice])
++  qxl_ss.add(when: 'CONFIG_QXL', if_true: [files('qxl.c', 'qxl-logger.c', 'qxl-render.c'), spice])
+   hw_display_modules += {'qxl': qxl_ss}
+ endif
+ 
+@@ -50,12 +49,12 @@
+ 
+ softmmu_ss.add(when: 'CONFIG_ARTIST', if_true: files('artist.c'))
+ 
+-softmmu_ss.add(when: [pixman, 'CONFIG_ATI_VGA'], if_true: files('ati.c', 'ati_2d.c', 'ati_dbg.c'))
++softmmu_ss.add(when: 'CONFIG_ATI_VGA', if_true: files('ati.c', 'ati_2d.c', 'ati_dbg.c'))
+ 
+ if config_all_devices.has_key('CONFIG_VIRTIO_GPU')
+   virtio_gpu_ss = ss.source_set()
+   virtio_gpu_ss.add(when: 'CONFIG_VIRTIO_GPU',
+-                    if_true: [files('virtio-gpu-base.c', 'virtio-gpu.c'), pixman])
++                    if_true: files('virtio-gpu-base.c', 'virtio-gpu.c'))
+   virtio_gpu_ss.add(when: 'CONFIG_LINUX', if_true: files('virtio-gpu-udmabuf.c'),
+                                           if_false: files('virtio-gpu-udmabuf-stubs.c'))
+   virtio_gpu_ss.add(when: 'CONFIG_VHOST_USER_GPU', if_true: files('vhost-user-gpu.c'))
+@@ -63,35 +62,35 @@
+ 
+   virtio_gpu_gl_ss = ss.source_set()
+   virtio_gpu_gl_ss.add(when: ['CONFIG_VIRTIO_GPU', virgl, opengl],
+-                       if_true: [files('virtio-gpu-gl.c', 'virtio-gpu-virgl.c'), pixman, virgl])
++                       if_true: [files('virtio-gpu-gl.c', 'virtio-gpu-virgl.c'), virgl])
+   hw_display_modules += {'virtio-gpu-gl': virtio_gpu_gl_ss}
+ endif
+ 
+ if config_all_devices.has_key('CONFIG_VIRTIO_PCI')
+   virtio_gpu_pci_ss = ss.source_set()
+   virtio_gpu_pci_ss.add(when: ['CONFIG_VIRTIO_GPU', 'CONFIG_VIRTIO_PCI'],
+-                        if_true: [files('virtio-gpu-pci.c'), pixman])
++                        if_true: files('virtio-gpu-pci.c'))
+   virtio_gpu_pci_ss.add(when: ['CONFIG_VHOST_USER_GPU', 'CONFIG_VIRTIO_PCI'],
+                         if_true: files('vhost-user-gpu-pci.c'))
+   hw_display_modules += {'virtio-gpu-pci': virtio_gpu_pci_ss}
+ 
+   virtio_gpu_pci_gl_ss = ss.source_set()
+   virtio_gpu_pci_gl_ss.add(when: ['CONFIG_VIRTIO_GPU', 'CONFIG_VIRTIO_PCI', virgl, opengl],
+-                           if_true: [files('virtio-gpu-pci-gl.c'), pixman])
++                           if_true: files('virtio-gpu-pci-gl.c'))
+   hw_display_modules += {'virtio-gpu-pci-gl': virtio_gpu_pci_gl_ss}
+ endif
+ 
+ if config_all_devices.has_key('CONFIG_VIRTIO_VGA')
+   virtio_vga_ss = ss.source_set()
+   virtio_vga_ss.add(when: 'CONFIG_VIRTIO_VGA',
+-                    if_true: [files('virtio-vga.c'), pixman])
++                    if_true: files('virtio-vga.c'))
+   virtio_vga_ss.add(when: 'CONFIG_VHOST_USER_VGA',
+                     if_true: files('vhost-user-vga.c'))
+   hw_display_modules += {'virtio-vga': virtio_vga_ss}
+ 
+   virtio_vga_gl_ss = ss.source_set()
+   virtio_vga_gl_ss.add(when: ['CONFIG_VIRTIO_VGA', virgl, opengl],
+-                       if_true: [files('virtio-vga-gl.c'), pixman])
++                       if_true: files('virtio-vga-gl.c'))
+   hw_display_modules += {'virtio-vga-gl': virtio_vga_gl_ss}
+ endif
+ 
 diff -ru --no-dereference qemu-orig/hw/display/vga.c qemu/hw/display/vga.c
 --- qemu-orig/hw/display/vga.c	2026-06-19 18:48:24.209672800 +0800
 +++ qemu/hw/display/vga.c	2026-06-19 21:21:14.217196500 +0800
@@ -138,6 +243,17 @@ diff -ru --no-dereference qemu-orig/hw/display/vga.c qemu/hw/display/vga.c
      }
      g_free(snap);
      memset(s->invalidated_y_table, 0, sizeof(s->invalidated_y_table));
+diff -ru --no-dereference qemu-orig/hw/s390x/meson.build qemu/hw/s390x/meson.build
+--- qemu-orig/hw/s390x/meson.build	2026-06-19 18:48:24.775757600 +0800
++++ qemu/hw/s390x/meson.build	2026-06-20 10:42:06.634603300 +0800
+@@ -53,6 +53,6 @@
+ hw_s390x_modules = {}
+ virtio_gpu_ccw_ss = ss.source_set()
+ virtio_gpu_ccw_ss.add(when: ['CONFIG_VIRTIO_GPU', 'CONFIG_VIRTIO_CCW'],
+-                      if_true: [files('virtio-ccw-gpu.c'), pixman])
++                      if_true: files('virtio-ccw-gpu.c'))
+ hw_s390x_modules += {'virtio-gpu-ccw': virtio_gpu_ccw_ss}
+ modules += {'hw-s390x': hw_s390x_modules}
 diff -ru --no-dereference qemu-orig/include/qemu/osdep.h qemu/include/qemu/osdep.h
 --- qemu-orig/include/qemu/osdep.h	2026-06-19 18:48:25.606579800 +0800
 +++ qemu/include/qemu/osdep.h	2026-06-19 18:49:13.211986400 +0800
@@ -174,7 +290,7 @@ diff -ru --no-dereference qemu-orig/include/ui/console.h qemu/include/ui/console
  enum qemu_color_names {
 diff -ru --no-dereference qemu-orig/meson.build qemu/meson.build
 --- qemu-orig/meson.build	2026-06-19 18:48:26.042694000 +0800
-+++ qemu/meson.build	2026-06-20 01:06:52.768955900 +0800
++++ qemu/meson.build	2026-06-20 10:48:58.744262700 +0800
 @@ -410,12 +410,6 @@
    lttng = dependency('lttng-ust', required: true, method: 'pkg-config',
                       kwargs: static_kwargs)
@@ -243,6 +359,15 @@ diff -ru --no-dereference qemu-orig/meson.build qemu/meson.build
  qemuutil = declare_dependency(link_with: libqemuutil,
                                sources: genh + version_res)
  
+@@ -2769,7 +2744,7 @@
+                               name_suffix: 'fa',
+                               build_by_default: false)
+ migration = declare_dependency(link_with: libmigration,
+-                               dependencies: [zlib, qom, io])
++                               dependencies: [qom, io])
+ softmmu_ss.add(migration)
+ 
+ block_ss = block_ss.apply(config_host, strict: false)
 @@ -3364,10 +3339,7 @@
  if targetos == 'darwin'
    summary_info += {'Cocoa support':   cocoa}
@@ -271,6 +396,17 @@ diff -ru --no-dereference qemu-orig/monitor/misc.c qemu/monitor/misc.c
      qemu_mutex_lock(&cur_mon->mon_lock);
      QLIST_FOREACH(monfd, &cur_mon->fds, next) {
          if (strcmp(monfd->name, fdname) != 0) {
+diff -ru --no-dereference qemu-orig/target/arm/meson.build qemu/target/arm/meson.build
+--- qemu-orig/target/arm/meson.build	2026-06-19 18:48:26.697939100 +0800
++++ qemu/target/arm/meson.build	2026-06-20 09:37:07.809011400 +0800
+@@ -36,7 +36,6 @@
+   'vfp_helper.c',
+   'cpu_tcg.c',
+ ))
+-arm_ss.add(zlib)
+ 
+ arm_ss.add(when: 'CONFIG_KVM', if_true: files('kvm.c', 'kvm64.c'), if_false: files('kvm-stub.c'))
+ 
 diff -ru --no-dereference qemu-orig/ui/console.c qemu/ui/console.c
 --- qemu-orig/ui/console.c	2026-06-19 18:48:29.176724300 +0800
 +++ qemu/ui/console.c	2026-06-19 18:49:13.913984000 +0800
