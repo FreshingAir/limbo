@@ -47,6 +47,8 @@ jobs:
           mv /tmp/qemu qemu
                 
           cd qemu
+          git submodule init
+          git submodule update
           patch -p1 < ../patches/qemu-6.2.0.patch
           cd ..
           
