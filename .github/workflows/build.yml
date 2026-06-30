@@ -27,7 +27,7 @@ jobs:
       - name: Setup Android SDK Tools
         uses: android-actions/setup-android@v3.2.1
         with:
-          packages: 'ndk;23.1.7779620'
+          packages: 'ndk;25.2.9519653'
 
       - name: 安装依赖
         run: |
@@ -89,7 +89,7 @@ jobs:
       - name: Build QEMU
         run: |
           cd limbo-android-lib/src/main/jni
-          export NDK_ROOT=${ANDROID_SDK_ROOT}/ndk/23.1.7779620
+          export NDK_ROOT=${ANDROID_SDK_ROOT}/ndk/25.2.9519653
           export PATH=$PATH:$NDK_ROOT
           export BUILD_GUEST=${{ github.event.inputs.build_guest || 'x86_64-softmmu,aarch64-softmmu' }}
           make limbo

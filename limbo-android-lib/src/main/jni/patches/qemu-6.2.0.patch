@@ -1,19 +1,6 @@
-diff -ru --no-dereference /tmp/qemu-6.2.0/Makefile ./Makefile
---- /tmp/qemu-6.2.0/Makefile	2026-06-19 18:48:23.295128400 +0800
-+++ ./Makefile	2026-06-19 18:49:13.215891000 +0800
-@@ -185,7 +185,8 @@
- 
- SUBDIR_MAKEFLAGS=$(if $(V),,--no-print-directory --quiet)
- 
--include $(SRC_PATH)/tests/Makefile.include
-+#Limbo: ignore
-+#include $(SRC_PATH)/tests/Makefile.include
- 
- all: recurse-all
- 
 diff -ru --no-dereference /tmp/qemu-6.2.0/accel/kvm/kvm-all.c ./accel/kvm/kvm-all.c
---- /tmp/qemu-6.2.0/accel/kvm/kvm-all.c	2026-06-19 18:48:23.304893300 +0800
-+++ ./accel/kvm/kvm-all.c	2026-06-19 18:49:11.495250300 +0800
+--- /tmp/qemu-6.2.0/accel/kvm/kvm-all.c	2026-06-30 18:31:00.194248329 +0800
++++ ./accel/kvm/kvm-all.c	2026-06-30 18:40:25.029111292 +0800
 @@ -2344,7 +2344,12 @@
      QLIST_INIT(&s->kvm_parked_vcpus);
      s->fd = qemu_open_old("/dev/kvm", O_RDWR);
@@ -28,8 +15,8 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/accel/kvm/kvm-all.c ./accel/kvm/kvm-al
          goto err;
      }
 diff -ru --no-dereference /tmp/qemu-6.2.0/audio/audio.c ./audio/audio.c
---- /tmp/qemu-6.2.0/audio/audio.c	2026-06-19 18:48:23.337149600 +0800
-+++ ./audio/audio.c	2026-06-19 18:49:11.517700300 +0800
+--- /tmp/qemu-6.2.0/audio/audio.c	2026-06-30 18:31:00.195226320 +0800
++++ ./audio/audio.c	2026-06-30 18:40:25.051540842 +0800
 @@ -2037,7 +2037,11 @@
  
      if (!pdo->has_frequency) {
@@ -43,8 +30,8 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/audio/audio.c ./audio/audio.c
      if (!pdo->has_channels) {
          pdo->has_channels = true;
 diff -ru --no-dereference /tmp/qemu-6.2.0/audio/audio_legacy.c ./audio/audio_legacy.c
---- /tmp/qemu-6.2.0/audio/audio_legacy.c	2026-06-19 18:48:23.339166500 +0800
-+++ ./audio/audio_legacy.c	2026-06-19 18:49:11.520667000 +0800
+--- /tmp/qemu-6.2.0/audio/audio_legacy.c	2026-06-30 18:31:00.195267570 +0800
++++ ./audio/audio_legacy.c	2026-06-30 18:40:25.052348517 +0800
 @@ -105,7 +105,11 @@
  static uint32_t frames_to_usecs(uint32_t frames,
                                  AudiodevPerDirectionOptions *pdo)
@@ -57,21 +44,10 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/audio/audio_legacy.c ./audio/audio_leg
      return (frames * 1000000 + freq / 2) / freq;
  }
  
-
 diff -ru --no-dereference /tmp/qemu-6.2.0/configure ./configure
---- /tmp/qemu-6.2.0/configure	2026-06-19 18:48:23.596465100 +0800
-+++ ./configure	2026-06-19 22:25:58.882152300 +0800
-@@ -1943,7 +1943,8 @@
- # pkg-config probe
- 
- if ! has "$pkg_config_exe"; then
--  error_exit "pkg-config binary '$pkg_config_exe' not found"
-+  #error_exit "pkg-config binary '$pkg_config_exe' not found"
-+  echo Limbo: ignoring pkg-config
- fi
- 
- ##########################################
-@@ -2435,7 +2436,8 @@
+--- /tmp/qemu-6.2.0/configure	2026-06-30 18:31:00.203242387 +0800
++++ ./configure	2026-06-30 18:41:58.811342716 +0800
+@@ -2435,7 +2435,8 @@
  # glib support probe
  
  glib_req_ver=2.56
@@ -81,18 +57,7 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/configure ./configure
  if test "$modules" = yes; then
      glib_modules="$glib_modules gmodule-export-2.0"
  elif test "$plugins" = "yes"; then
-@@ -2446,8 +2448,8 @@
-     if $pkg_config --atleast-version=$glib_req_ver $i; then
-         glib_cflags=$($pkg_config --cflags $i)
-         glib_libs=$($pkg_config --libs $i)
--    else
--        error_exit "glib-$glib_req_ver $i is required to compile QEMU"
-+    # else
-+    #     error_exit "glib-$glib_req_ver $i is required to compile QEMU"
-     fi
- done
- 
-@@ -4033,6 +4035,8 @@
+@@ -4033,6 +4034,8 @@
  else
      :> config-poison.h
  fi
@@ -101,10 +66,9 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/configure ./configure
  
  # Save the configure command line for later reuse.
  cat <<EOD >config.status
-
 diff -ru --no-dereference /tmp/qemu-6.2.0/hw/display/vga.c ./hw/display/vga.c
---- /tmp/qemu-6.2.0/hw/display/vga.c	2026-06-19 18:48:24.209672800 +0800
-+++ ./hw/display/vga.c	2026-06-19 21:21:14.217196500 +0800
+--- /tmp/qemu-6.2.0/hw/display/vga.c	2026-06-30 18:31:00.221079162 +0800
++++ ./hw/display/vga.c	2026-06-30 18:40:25.095111292 +0800
 @@ -1461,6 +1461,12 @@
      memory_region_set_log(&s->vram, false, DIRTY_MEMORY_VGA);
  }
@@ -141,8 +105,8 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/hw/display/vga.c ./hw/display/vga.c
      g_free(snap);
      memset(s->invalidated_y_table, 0, sizeof(s->invalidated_y_table));
 diff -ru --no-dereference /tmp/qemu-6.2.0/include/qemu/osdep.h ./include/qemu/osdep.h
---- /tmp/qemu-6.2.0/include/qemu/osdep.h	2026-06-19 18:48:25.606579800 +0800
-+++ ./include/qemu/osdep.h	2026-06-19 18:49:13.211986400 +0800
+--- /tmp/qemu-6.2.0/include/qemu/osdep.h	2026-06-30 18:31:00.258264295 +0800
++++ ./include/qemu/osdep.h	2026-06-30 18:40:25.106111292 +0800
 @@ -36,6 +36,10 @@
  
  #include "qemu/compiler.h"
@@ -155,8 +119,8 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/include/qemu/osdep.h ./include/qemu/os
   * stdlib.h unless we define these macros before first inclusion of
   * that system header.
 diff -ru --no-dereference /tmp/qemu-6.2.0/include/ui/console.h ./include/ui/console.h
---- /tmp/qemu-6.2.0/include/ui/console.h	2026-06-19 18:48:25.713018800 +0800
-+++ ./include/ui/console.h	2026-06-19 18:49:13.213938900 +0800
+--- /tmp/qemu-6.2.0/include/ui/console.h	2026-06-30 18:31:00.261359512 +0800
++++ ./include/ui/console.h	2026-06-30 18:40:25.113444625 +0800
 @@ -26,8 +26,16 @@
  #define QEMU_CAPS_LOCK_LED   (1 << 2)
  
@@ -174,9 +138,22 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/include/ui/console.h ./include/ui/cons
  
  /* Color number is match to standard vga palette */
  enum qemu_color_names {
+diff -ru --no-dereference /tmp/qemu-6.2.0/Makefile ./Makefile
+--- /tmp/qemu-6.2.0/Makefile	2026-06-30 18:31:00.193860762 +0800
++++ ./Makefile	2026-06-30 18:40:25.003444625 +0800
+@@ -185,7 +185,8 @@
+ 
+ SUBDIR_MAKEFLAGS=$(if $(V),,--no-print-directory --quiet)
+ 
+-include $(SRC_PATH)/tests/Makefile.include
++#Limbo: ignore
++#include $(SRC_PATH)/tests/Makefile.include
+ 
+ all: recurse-all
+ 
 diff -ru --no-dereference /tmp/qemu-6.2.0/monitor/misc.c ./monitor/misc.c
---- /tmp/qemu-6.2.0/monitor/misc.c	2026-06-19 18:48:26.089563300 +0800
-+++ ./monitor/misc.c	2026-06-19 19:02:26.057703300 +0800
+--- /tmp/qemu-6.2.0/monitor/misc.c	2026-06-30 18:31:00.272320920 +0800
++++ ./monitor/misc.c	2026-06-30 18:40:25.120777959 +0800
 @@ -1040,6 +1040,13 @@
      mon_fd_t *monfd;
      int tmp_fd;
@@ -192,8 +169,8 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/monitor/misc.c ./monitor/misc.c
      QLIST_FOREACH(monfd, &cur_mon->fds, next) {
          if (strcmp(monfd->name, fdname) != 0) {
 diff -ru --no-dereference /tmp/qemu-6.2.0/ui/console.c ./ui/console.c
---- /tmp/qemu-6.2.0/ui/console.c	2026-06-19 18:48:29.176724300 +0800
-+++ ./ui/console.c	2026-06-19 18:49:13.913984000 +0800
+--- /tmp/qemu-6.2.0/ui/console.c	2026-06-30 18:31:00.374985112 +0800
++++ ./ui/console.c	2026-06-30 18:40:25.139111292 +0800
 @@ -41,6 +41,11 @@
  #define DEFAULT_BACKSCROLL 512
  #define CONSOLE_CURSOR_PERIOD 500
@@ -207,8 +184,8 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/ui/console.c ./ui/console.c
      uint8_t fgcol:4;
      uint8_t bgcol:4;
 diff -ru --no-dereference /tmp/qemu-6.2.0/ui/sdl2-2d.c ./ui/sdl2-2d.c
---- /tmp/qemu-6.2.0/ui/sdl2-2d.c	2026-06-19 18:48:29.201129000 +0800
-+++ ./ui/sdl2-2d.c	2026-06-19 18:49:13.915936900 +0800
+--- /tmp/qemu-6.2.0/ui/sdl2-2d.c	2026-06-30 18:31:00.375677104 +0800
++++ ./ui/sdl2-2d.c	2026-06-30 18:40:25.146444625 +0800
 @@ -122,6 +122,12 @@
                                        surface_width(new_surface),
                                        surface_height(new_surface));
@@ -223,8 +200,8 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/ui/sdl2-2d.c ./ui/sdl2-2d.c
  
  void sdl2_2d_refresh(DisplayChangeListener *dcl)
 diff -ru --no-dereference /tmp/qemu-6.2.0/ui/sdl2.c ./ui/sdl2.c
---- /tmp/qemu-6.2.0/ui/sdl2.c	2026-06-19 18:48:29.203078200 +0800
-+++ ./ui/sdl2.c	2026-06-19 18:49:13.918865900 +0800
+--- /tmp/qemu-6.2.0/ui/sdl2.c	2026-06-30 18:31:00.375718354 +0800
++++ ./ui/sdl2.c	2026-06-30 18:40:25.153179834 +0800
 @@ -96,7 +96,16 @@
                                           surface_width(scon->surface),
                                           surface_height(scon->surface),
@@ -301,8 +278,8 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/ui/sdl2.c ./ui/sdl2.c
      if (SDL_Init(SDL_INIT_VIDEO)) {
          fprintf(stderr, "Could not initialize SDL(%s) - exiting\n",
 diff -ru --no-dereference /tmp/qemu-6.2.0/ui/vnc.c ./ui/vnc.c
---- /tmp/qemu-6.2.0/ui/vnc.c	2026-06-19 18:48:29.228478500 +0800
-+++ ./ui/vnc.c	2026-06-19 18:49:13.922810100 +0800
+--- /tmp/qemu-6.2.0/ui/vnc.c	2026-06-30 18:31:00.376327387 +0800
++++ ./ui/vnc.c	2026-06-30 18:40:25.153777959 +0800
 @@ -56,8 +56,19 @@
  #include "qemu/help_option.h"
  #include "io/dns-resolver.h"
@@ -389,8 +366,8 @@ diff -ru --no-dereference /tmp/qemu-6.2.0/ui/vnc.c ./ui/vnc.c
          trace_vnc_key_event_ext(down, sym, keycode, code2name(keycode));
          do_key_event(vs, down, keycode, sym);
 diff -ru --no-dereference /tmp/qemu-6.2.0/util/qemu-openpty.c ./util/qemu-openpty.c
---- /tmp/qemu-6.2.0/util/qemu-openpty.c	2026-06-19 18:48:29.275344100 +0800
-+++ ./util/qemu-openpty.c	2026-06-19 18:49:14.483792400 +0800
+--- /tmp/qemu-6.2.0/util/qemu-openpty.c	2026-06-30 18:31:00.377354420 +0800
++++ ./util/qemu-openpty.c	2026-06-30 18:40:25.161111292 +0800
 @@ -110,6 +110,9 @@
  }
  #endif

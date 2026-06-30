@@ -99,7 +99,6 @@ ifeq ($(NDK_TOOLCHAIN_VERSION),clang)
     #NM=$(TOOLCHAIN_CLANG_PREFIX)/llvm-nm
     OBJ_COPY=$(TOOLCHAIN_CLANG_PREFIX)/llvm-objcopy
     STRIP=$(TOOLCHAIN_CLANG_PREFIX)/llvm-strip
-
 else
     #NDK Toolchain
     CC=$(TOOLCHAIN_PREFIX)gcc
