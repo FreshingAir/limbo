@@ -103,27 +103,11 @@ jobs:
           export PATH=$PATH:$NDK_ROOT
           export BUILD_GUEST=${{ github.event.inputs.build_guest || 'x86_64-softmmu,aarch64-softmmu' }}
           make limbo
-      # ================= 缓存 2：Gradle =================
-      - name: 缓存 Gradle 构建
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-      - name: Build with Gradle
-        run: |
-          chmod +x ./gradlew
-          ./gradlew assemble
+      - uses: gradle/actions/setup-gradle@v6
+      - run: gradle wrapper
+      - run: gradle assemble
       - name: 上传apk构建产物
         uses: actions/upload-artifact@v7.0.1
         with:
           name: build_apk_output.zip
-          path: limbo-android-example/build/outputs/apk/**/*.apk
-      - name: Upload a Build Artifact
-        uses: actions/upload-artifact@v7.0.1
-        with:
-          name: build_aar_output.zip
-          path: limbo-android-lib/build/outputs/aar/*.aar
+          path: ./**/*.apk
