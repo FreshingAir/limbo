@@ -61,6 +61,7 @@ public class Config {
     public static final int STATUS_NULL = -1;
     public static final int STATUS_CREATED = 1000;
     public static final int STATUS_PAUSED = 1001;
+    public static final String ACTION_START = "com.max2idea.android.limbo.action.STARTVM";
 
     // GUI Options
     public static final boolean enable_SDL = true;
@@ -114,7 +115,7 @@ public class Config {
     public static boolean syncFilesOnClose = true;
 
     public enum Arch {
-        x86, x86_64, arm, arm64
+        x86, x86_64, arm, arm64, ppc, ppc64, sparc, sparc64
     }
 
     //Enable if you build with KVM support, needes android-21 platform

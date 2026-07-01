@@ -158,9 +158,6 @@ else
 	KVM = --disable-kvm
 endif
 
-#DOCS
-DOCS = --disable-docs
-
 #XEN
 XEN = --disable-xen --disable-xen-pci-passthrough
 
@@ -210,7 +207,6 @@ config:
 	--cc=$(CC) \
 	--target-list=$(QEMU_TARGET_LIST) \
 	--cpu=$(QEMU_HOST_CPU) \
-	$(DOCS) \
 	$(PIXMAN) \
 	$(FDT) \
 	$(VNC) \
